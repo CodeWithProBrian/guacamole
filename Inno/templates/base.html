@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+{% load static %}
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>Blink - Startup & SaaS Bootstrap 5 Template.</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="{% static "images/favicon.svg" %}" />
+
+    <!-- ========================= CSS here ========================= -->
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" />
+    <link rel="stylesheet" href="{% static "css/LineIcons.3.0.css" %}" />
+    <link rel="stylesheet" href="{% static "css/animate.css" %}" />
+    <link rel="stylesheet" href="{% static "css/tiny-slider.css" %}" />
+    <link rel="stylesheet" href="{% static "css/glightbox.min.css" %}" />
+    <link rel="stylesheet" href="{% static "css/main.css" %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+    <!-- Option 1: Include in HTML -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div class="preloader">
+        <div class="preloader-inner">
+            <div class="preloader-icon">
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+    <!-- /End Preloader -->
+
+    <!-- Start Header Area -->
+    {% include "header.html" %}
+    <!-- End Header Area -->
+     {% block content %}{% endblock content %}
+    <!-- Start Footer Area -->
+    <footer class="footer section">
+        <!-- Start Footer Top -->
+        <div class="footer-top">
+            <div class="container">
+                <div class="inner-content">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <!-- Single Widget -->
+                            <div class="single-footer f-about">
+                                <div class="logo">
+                                    <a href="index.html">
+                                        <img src="images/logo/logo.svg" alt="#">
+                                    </a>
+                                </div>
+                                <p>Making the world a better place through constructing elegant hierarchies.</p>
+                                <p class="copyright-text"><span>© 2023 Blink.</span>Designed and Developed by <a href="https://graygrids.com/" rel="nofollow" target="_blank">GrayGrids</a>
+                                </p>
+                            </div>
+                            <!-- End Single Widget -->
+                        </div>
+                        <div class="col-lg-2 col-md-6 col-12">
+                            <!-- Single Widget -->
+                            <div class="single-footer f-link">
+                                <h3>Solutions</h3>
+                                <ul>
+                                    <li><a href="javascript:void(0)">Marketing</a></li>
+                                    <li><a href="javascript:void(0)">Analytics</a></li>
+                                    <li><a href="javascript:void(0)">Commerce</a></li>
+                                    <li><a href="javascript:void(0)">Insights</a></li>
+                                </ul>
+                            </div>
+                            <!-- End Single Widget -->
+                        </div>
+                        <div class="col-lg-2 col-md-6 col-12">
+                            <!-- Single Widget -->
+                            <div class="single-footer f-link">
+                                <h3>Support</h3>
+                                <ul>
+                                    <li><a href="javascript:void(0)">Pricing</a></li>
+                                    <li><a href="javascript:void(0)">Documentation</a></li>
+                                    <li><a href="javascript:void(0)">Guides</a></li>
+                                    <li><a href="javascript:void(0)">API Status</a></li>
+                                </ul>
+                            </div>
+                            <!-- End Single Widget -->
+                        </div>
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <!-- Single Widget -->
+                            <div class="single-footer newsletter">
+                                <h3>Subscribe</h3>
+                                <p>Subscribe to our newsletter for the latest updates</p>
+                                <form action="#" method="get" target="_blank" class="newsletter-form">
+                                    <input name="EMAIL" placeholder="Email address" required="required" type="email">
+                                    <div class="button">
+                                        <button class="sub-btn"><i class="lni lni-envelope"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- End Single Widget -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/ End Footer Top -->
+    </footer>
+    <!--/ End Footer Area -->
+
+    <!-- ========================= scroll-top ========================= -->
+    <a href="#" class="scroll-top">
+        <i class="lni lni-chevron-up"></i>
+    </a>
+
+    <!-- ========================= JS here ========================= -->
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/wow.min.js" %}"></script>
+    <script src="{% static "js/tiny-slider.js" %}"></script>
+    <script src="{% static "js/glightbox.min.js" %}"></script>
+    <script src="{% static "js/count-up.min.js" %}"></script>
+    <script src="{% static "js/main.js" %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/brands.min.js"></script>
+    <script>
+        //========= testimonial 
+        tns({
+            container: '.testimonial-slider',
+            items: 3,
+            slideBy: 'page',
+            autoplay: false,
+            mouseDrag: true,
+            gutter: 0,
+            nav: true,
+            controls: false,
+            controlsText: ['<i class="lni lni-arrow-left"></i>', '<i class="lni lni-arrow-right"></i>'],
+            responsive: {
+                0: {
+                    items: 1,
+                },
+                540: {
+                    items: 1,
+                },
+                768: {
+                    items: 1,
+                },
+                992: {
+                    items: 1,
+                },
+                1170: {
+                    items: 2,
+                }
+            }
+        });
+
+        //====== counter up 
+        var cu = new counterUp({
+            start: 0,
+            duration: 2000,
+            intvalues: true,
+            interval: 100,
+            append: " ",
+        });
+        cu.start();
+    </script>
+</body>
+</html>
