@@ -33,7 +33,7 @@
     <!-- End Hero Area -->
 
     <!-- Start Services Area -->
-<section class="services section">
+<section id="services" class="services section">
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -110,40 +110,6 @@
         </div>
     </section>
     <!-- End Process Area -->
-
-    <!-- Start About Area -->
-    <section class="about section">
-        <div class="shape-1">
-            <img src="{% static "images/about/shape1.svg" %}" alt="#">
-        </div>
-        <div class="shape-2">
-            <img src="{% static "images/about/shape2.svg" %}" alt="#">
-        </div>
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 col-12">
-                    <div class="content">
-                        <h4 class="wow fadeInUp" data-wow-delay=".2s">Use & Customization</h4>
-                        <h2 class="wow fadeInUp" data-wow-delay=".4s">Getting better way to Saas uses</h2>
-                        <p class="wow fadeInUp" data-wow-delay=".6s">Sed ut perspiciatis unde omnis natus error voluptatem accusantium doloremque laudantium totam.
-                        </p>
-                        <div class="action-button wow fadeInUp" data-wow-delay=".8s">
-                            <div class="btn-icon">
-                                <i class="lni lni-bolt"></i>
-                            </div>
-                            <h4>Become faster
-                                <a href="javascript:void(0)">Learn More <i class="lni lni-arrow-right"></i></a>
-                            </h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-12 wow fadeInRight" data-wow-delay=".4s">
-                    <img src="images/about/app-ss2.svg" alt="#">
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- End About Area -->
      <!-- Start Testimonials Area -->
 <section class="testimonials section">
     <div class="container">
@@ -194,94 +160,11 @@
     </div>
 </section>
 <!-- End Testimonial Area -->
-
-    <!-- Start Blog Section Area -->
-    <section class="blog-section section">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="section-title">
-                        <h3 class="wow zoomIn" data-wow-delay=".2s">Blogs</h3>
-                        <h2 class="wow fadeInUp" data-wow-delay=".4s">Our Latest News</h2>
-                        <p class="wow fadeInUp" data-wow-delay=".6s">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-4 col-md-6 col-12 wow fadeInUp" data-wow-delay=".4s">
-                    <!-- Start Single Blog Grid -->
-                    <div class="single-blog-grid">
-                        <div class="blog-img">
-                            <a href="blog-single.html">
-                                <img src="images/blog/blog-1.jpg" alt="#">
-                            </a>
-                        </div>
-                        <div class="blog-content">
-                            <a class="category" href="javascript:void(0)">Web Solution</a>
-                            <h4>
-                                <a href="blog-single.html">Make a better website solution for your product.</a>
-                            </h4>
-                            <p>Lorem ipsum dolor sit amet, adipscing elitr, sed diam nonumy eirmod tempor ividunt dolore magna.
-                            </p>
-                            <a href="blog-single.html" class="more-btn">Read Blog <i
-                                    class="lni lni-arrow-right"></i></a>
-                        </div>
-                    </div>
-                    <!-- End Single Blog Grid -->
-                </div>
-                <div class="col-lg-4 col-md-6 col-12 wow fadeInUp" data-wow-delay=".6s">
-                    <!-- Start Single Blog -->
-                    <div class="single-blog-grid">
-                        <div class="blog-img">
-                            <a href="blog-single.html">
-                                <img src="images/blog/blog-2.jpg" alt="#">
-                            </a>
-                        </div>
-                        <div class="blog-content">
-                            <a class="category" href="javascript:void(0)">UI Interface</a>
-                            <h4>
-                                <a href="blog-single.html">The Science of Color Contrast — An Expert Designer’s
-                                    Guide</a>
-                            </h4>
-                            <p>Lorem ipsum dolor sit amet, adipscing elitr, sed diam nonumy eirmod tempor ividunt dolore magna.
-                            </p>
-                            <a href="blog-single.html" class="more-btn">Read Blog <i
-                                    class="lni lni-arrow-right"></i></a>
-                        </div>
-                    </div>
-                    <!-- End Single Blog Grid -->
-                </div>
-                <div class="col-lg-4 col-md-6 col-12 wow fadeInUp" data-wow-delay=".8s">
-                    <!-- Start Single Blog Grid -->
-                    <div class="single-blog-grid">
-                        <div class="blog-img">
-                            <a href="blog-single.html">
-                                <img src="images/blog/blog-3.jpg" alt="#">
-                            </a>
-                        </div>
-                        <div class="blog-content">
-                            <a class="category" href="javascript:void(0)">Web Interface</a>
-                            <h4>
-                                <a href="blog-single.html">SEO Made Simple: A Step by Step Guide for 2020.</a>
-                            </h4>
-                            <p>Lorem ipsum dolor sit amet, adipscing elitr, sed diam nonumy eirmod tempor ividunt dolore magna.
-                            </p>
-                            <a href="blog-single.html" class="more-btn">Read Blog <i
-                                    class="lni lni-arrow-right"></i></a>
-                        </div>
-                    </div>
-                    <!-- End Single Blog Grid -->
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- End Blog Section Area -->
-
     <!-- Start Call Action Area -->
     <section class="call-action">
         <div class="container">
             <div class="inner-content">
-                <img class="bg-shape" src="images/call-action/bg-shape.svg" alt="#">
+                <img class="bg-shape" src="{% static "images/call-action/bg-shape.svg" %}" alt="#">
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-md-8 col-12">
                         <div class="text">

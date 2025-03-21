@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Blink - Startup & SaaS Bootstrap 5 Template.</title>
+    <title>{% block title %}{% endblock title %} - Innovestra Tech Enterprises</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="shortcut icon" type="image/x-icon" href="{% static "images/favicon.svg" %}" />
@@ -45,44 +45,20 @@
         <div class="footer-top">
             <div class="container">
                 <div class="inner-content">
-                    <div class="row">
+                    <div class="row justify-content-between">
                         <div class="col-lg-4 col-md-6 col-12">
                             <!-- Single Widget -->
                             <div class="single-footer f-about">
                                 <div class="logo">
-                                    <a href="index.html">
-                                        <img src="images/logo/logo.svg" alt="#">
+                                    <a href="{% url "home" %}">
+                                        <img src="{% static "images/logo/logo.svg" %}" alt="#">
                                     </a>
                                 </div>
                                 <p>Making the world a better place through constructing elegant hierarchies.</p>
-                                <p class="copyright-text"><span>© 2023 Blink.</span>Designed and Developed by <a href="https://graygrids.com/" rel="nofollow" target="_blank">GrayGrids</a>
+                                <p class="copyright-text"><span>© <script>
+                                    document.write(new Date().getFullYear());
+                                </script> Blink.</span>Designed and Developed by <a href="#" rel="nofollow" target="_blank">InnoTech</a>
                                 </p>
-                            </div>
-                            <!-- End Single Widget -->
-                        </div>
-                        <div class="col-lg-2 col-md-6 col-12">
-                            <!-- Single Widget -->
-                            <div class="single-footer f-link">
-                                <h3>Solutions</h3>
-                                <ul>
-                                    <li><a href="javascript:void(0)">Marketing</a></li>
-                                    <li><a href="javascript:void(0)">Analytics</a></li>
-                                    <li><a href="javascript:void(0)">Commerce</a></li>
-                                    <li><a href="javascript:void(0)">Insights</a></li>
-                                </ul>
-                            </div>
-                            <!-- End Single Widget -->
-                        </div>
-                        <div class="col-lg-2 col-md-6 col-12">
-                            <!-- Single Widget -->
-                            <div class="single-footer f-link">
-                                <h3>Support</h3>
-                                <ul>
-                                    <li><a href="javascript:void(0)">Pricing</a></li>
-                                    <li><a href="javascript:void(0)">Documentation</a></li>
-                                    <li><a href="javascript:void(0)">Guides</a></li>
-                                    <li><a href="javascript:void(0)">API Status</a></li>
-                                </ul>
                             </div>
                             <!-- End Single Widget -->
                         </div>
