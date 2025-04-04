@@ -1,0 +1,410 @@
+{% extends "free_base.html" %} 
+{% load static %} 
+{% block title %}Payment Status{% endblock title %}
+
+{% block content %}
+<div class="container py-5 d-flex align-items-center justify-content-center">
+    <div class="row w-100">
+        <div class="col-md-5 mx-auto">
+            <div class="card shadow-sm rounded-lg">
+                {% if error_message %}
+                <div class="alert alert-danger text-center" role="alert">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+                <div class="card-body text-center p-4">
+                    <h4 class="card-title fw-bold mb-4">Payment Processing</h4>
+                    <div class="my-4" id="status-container">
+                        <i id="loading-spinner" class="fa-solid fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                        <p id="initial-message" class="lead">Your payment is being processed</p>
+                        <div id="status-message"></div>
+                        <div id="confirm-text" class="text-muted mt-2">Waiting for confirmation...</div>
+                    </div>
+                    <div class="d-flex justify-content-center mt-4 gap-3">
+                        <a
+                          href="javascript:void(0);"
+                          class="btn btn-warning px-4"
+                          id="retry-button"
+                          style="display: none"
+                          onclick="location.reload();"
+                        >
+                          Retry Payment
+                        </a>
+                        <a
+                          href="{% url 'store' %}"
+                          class="btn btn-secondary px-4"
+                          id="home-button"
+                          style="display: none"
+                        >
+                          Back to Bingwastore
+                        </a>
+                    </div>
+                    <div class="mt-4" id="processing-message">
+                        <p class="text-muted">Please don't close this page. You will be redirected once the payment is complete.</p>
+                        <div class="progress mt-3" id="progress-container" style="height: 8px; border-radius: 4px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p class="text-muted mt-2"><small id="attempt-counter">Checking payment status (0/20)...</small></p>
+                    </div>
+                    <div class="mt-3">
+                        <button id="cancel-button" class="btn btn-link text-danger">Cancel Transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add confetti.js for success animation -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+<script>
+    let reqcount = 0;
+    const maxAttempts = 20;
+    const checkoutRequestID = "{{ checkout_request_id }}";
+    const statusContainer = document.getElementById("status-container");
+    const loadingSpinner = document.getElementById("loading-spinner");
+    const statusMessage = document.getElementById("status-message");
+    const retryButton = document.getElementById("retry-button");
+    const homeButton = document.getElementById("home-button");
+    const initialMessage = document.getElementById("initial-message");
+    const confirmText = document.getElementById("confirm-text");
+    const processingMessage = document.getElementById("processing-message");
+    const progressBar = document.getElementById("progress-bar");
+    const attemptCounter = document.getElementById("attempt-counter");
+    const cancelButton = document.getElementById("cancel-button");
+    
+    let statusCheckTimer = null;
+    let userCancelled = false;
+
+    // Payment result codes and their meanings
+    const resultCodes = {
+        "0": { status: "success", message: "Payment successful" },
+        "1": { status: "failed", message: "Payment failed" },
+        "1032": { status: "cancelled", message: "Transaction cancelled" },
+        "1037": { status: "timeout", message: "Transaction timed out" },
+        "2001": { status: "wrong-pin", message: "Wrong PIN entered" },
+    };
+
+    const confettiEffect = () => {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+        });
+    };
+
+    // Function to update progress bar based on current attempt
+    const updateProgressBar = (currentAttempt) => {
+        const progressPercentage = (currentAttempt / maxAttempts) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+        attemptCounter.textContent = `Checking payment status (${currentAttempt}/${maxAttempts})...`;
+        
+        // Change progress bar color when getting close to timeout
+        if (progressPercentage > 50 && progressPercentage <= 75) {
+            progressBar.classList.remove("bg-primary");
+            progressBar.classList.add("bg-warning");
+        } else if (progressPercentage > 75 && progressPercentage < 100) {
+            progressBar.classList.remove("bg-warning");
+            progressBar.classList.add("bg-danger");
+        }
+    };
+
+    // Function to stop all animations and hide processing elements
+    const stopProcessingAnimation = () => {
+        loadingSpinner.classList.remove("fa-spin");
+        processingMessage.style.display = "none";
+        cancelButton.style.display = "none";
+    };
+
+    // Function to update UI for completed status checks
+    const updateCompletedStatus = (statusType, message, description, showRetry = true) => {
+        // Stop spinner and hide processing elements
+        stopProcessingAnimation();
+        loadingSpinner.style.display = "none";
+        confirmText.style.display = "none";
+        
+        // Update status message
+        initialMessage.innerHTML = message;
+        statusMessage.innerHTML = description;
+        
+        // Show appropriate buttons
+        if (statusType !== "success" && showRetry) {
+            retryButton.style.display = "inline-block";
+        }
+        homeButton.style.display = "inline-block";
+        
+        // Trigger confetti on success
+        if (statusType === "success") {
+            confettiEffect();
+        }
+    };
+
+    // Handle user-initiated cancellation
+    const handleCancellation = () => {
+        userCancelled = true;
+        
+        if (statusCheckTimer) {
+            clearInterval(statusCheckTimer);
+        }
+        
+        updateCompletedStatus(
+            "cancelled",
+            "Transaction Cancelled",
+            `<div class="alert alert-info" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-info-circle mb-2" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+                <p>You have cancelled this transaction. No payment has been processed.</p>
+            </div>`,
+            true
+        );
+    };
+
+    // Function to handle different payment response scenarios
+    const handlePaymentResponse = (resultCode, resultDesc, responseData = {}) => {
+        clearInterval(statusCheckTimer);
+        
+        // Default values if result code is not recognized
+        let statusType = "failed";
+        let title = "Payment failed";
+        let icon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-x-circle-fill text-danger mb-3" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/></svg>`;
+        let messageContent = "";
+        let messageClass = "text-danger";
+        
+        // Set values based on result code
+        if (resultCode in resultCodes) {
+            statusType = resultCodes[resultCode].status;
+            title = resultCodes[resultCode].message;
+            
+            // Customize display based on status type
+            switch(statusType) {
+                case "success":
+                    // Stop spinner but keep it visible, transformed into a success checkmark
+                    loadingSpinner.classList.remove("fa-spin", "fa-spinner");
+                    loadingSpinner.classList.add("fa-check-circle");
+                    loadingSpinner.style.color = "#28a745";
+                    loadingSpinner.style.display = "none"; // Hide the spinner since we'll use the SVG icon
+                    
+                    // Create a more satisfying success display
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#28a745" class="bi bi-check-circle-fill mb-3" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                    </svg>`;
+                    
+                    // Create a more detailed and satisfying success message
+                    messageContent = `
+                        <div class="success-animation mb-3">
+                            ${icon}
+                        </div>
+                        <h3 class="text-success mb-3">Payment Complete!</h3>
+                        <div class="progress mt-3 mb-2" style="height: 5px;">
+                            <div id="redirect-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p id="redirect-countdown" class="mt-3">Redirecting to store in 5 seconds...</p>
+                    `;
+                    messageClass = "text-center";
+                    break;
+                
+                case "cancelled":
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#6c757d" class="bi bi-x-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>`;
+                    messageContent = `
+                        <div class="mb-3">${icon}</div>
+                        <h4 class="text-secondary mb-3">Transaction Cancelled</h4>
+                        <p class="mt-2">${resultDesc || "The payment has been cancelled."}</p>
+                    `;
+                    messageClass = "text-center";
+                    break;
+                case "timeout":
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#ffc107" class="bi bi-clock mb-3" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>`;
+                    messageContent = `
+                        <div class="mb-3">${icon}</div>
+                        <h4 class="text-warning mb-3">Payment Timed Out</h4>
+                        <p class="mt-2">${resultDesc || "You took too long to confirm the payment."}</p>
+                    `;
+                    messageClass = "text-center";
+                    break;
+                case "wrong-pin":
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#dc3545" class="bi bi-shield-lock mb-3" viewBox="0 0 16 16">
+                        <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.6.6 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56z"/>
+                        <path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415z"/>
+                    </svg>`;
+                    messageContent = `
+                        <div class="mb-3">${icon}</div>
+                        <h4 class="text-danger mb-3">Incorrect PIN</h4>
+                        <p class="mt-2">${resultDesc || "Incorrect PIN entered. Please try again with the correct PIN."}</p>
+                    `;
+                    messageClass = "text-center";
+                    break;
+                default:
+                    // Default case for failed payments
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#dc3545" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                    </svg>`;
+                    messageContent = `
+                        <div class="mb-3">${icon}</div>
+                        <h4 class="text-danger mb-3">Payment Failed</h4>
+                        <p class="mt-2">${resultDesc || "Payment failed. Please try again."}</p>
+                    `;
+                    messageClass = "text-center";
+            }
+        } else {
+            // Custom message for unrecognized result codes
+            icon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#dc3545" class="bi bi-question-circle mb-3" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+            </svg>`;
+            messageContent = `
+                <div class="mb-3">${icon}</div>
+                <h4 class="text-danger mb-3">Unknown Error</h4>
+                <p class="mt-2">${resultDesc || "Payment failed with code: " + resultCode}</p>
+            `;
+            messageClass = "text-center";
+        }
+        
+        // Update the UI with the appropriate message
+        stopProcessingAnimation();
+        confirmText.style.display = "none";
+        initialMessage.style.display = "none";
+        
+        // Clear and update status message
+        statusMessage.innerHTML = messageContent;
+        statusMessage.className = messageClass;
+        
+        // Show appropriate buttons
+        if (statusType !== "success") {
+            retryButton.style.display = "inline-block";
+            homeButton.style.display = "inline-block";
+        } else {
+            // Only for success case, set up redirection
+            retryButton.style.display = "none";
+            homeButton.style.display = "inline-block";
+            
+            // Set up countdown for success case only
+            let secondsLeft = 5;
+            const progressElement = document.getElementById("redirect-progress");
+            const countdownElement = document.getElementById("redirect-countdown");
+            
+            const countdownInterval = setInterval(() => {
+                secondsLeft--;
+                const progressWidth = ((5 - secondsLeft) / 5) * 100;
+                progressElement.style.width = `${progressWidth}%`;
+                
+                if (secondsLeft > 0) {
+                    countdownElement.textContent = `Redirecting to store in ${secondsLeft} seconds...`;
+                } else {
+                    clearInterval(countdownInterval);
+                    window.location.href = "{% url 'store' %}";
+                }
+            }, 1000);
+        }
+    };
+
+    // Handle transaction timeout (from UI side)
+    const handleTimeout = () => {
+        if (statusCheckTimer) {
+            clearInterval(statusCheckTimer);
+        }
+        
+        const timeoutIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#ffc107" class="bi bi-clock-history mb-3" viewBox="0 0 16 16">
+            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a6.998 6.998 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.995 7.995 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535m-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+            <path d="M8 1a7 7 0 1 0 4.95 11.95.5.5 0 0 1 .707.707A8 8 0 1 1 8 0a.5.5 0 0 1 .5.5v7.793l4.146-4.147a.5.5 0 0 1 .707.708L8.707 9.5a.5.5 0 0 1-.707 0L7.293 8.793a.5.5 0 0 1 0-.707L8 7.379V1.5A.5.5 0 0 1 8 1z"/>
+        </svg>`;
+        
+        updateCompletedStatus(
+            "timeout",
+            "Payment timed out",
+            `<div class="text-center">
+                <div class="mb-3">${timeoutIcon}</div>
+                <h4 class="text-warning mb-3">Payment Timed Out</h4>
+                <p>You took too long to confirm the payment. Please try again.</p>
+            </div>`
+        );
+    };
+
+    const stkPushQueryWithIntervals = (checkoutRequestID) => {
+        statusCheckTimer = setInterval(async () => {
+            // If user cancelled, stop checking
+            if (userCancelled) {
+                clearInterval(statusCheckTimer);
+                return;
+            }
+            
+            reqcount += 1;
+            
+            // Update progress bar with current attempt
+            updateProgressBar(reqcount);
+
+            try {
+                const response = await fetch("/stk-status/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify({ checkout_request_id: checkoutRequestID }),
+                });
+
+                if (!response.ok) throw new Error("Failed to fetch status");
+
+                const data = await response.json();
+                console.log("STK Query Response:", data);
+
+                const resultCode = data.status.ResultCode;
+                const resultDesc = data.status.ResultDesc || "";
+
+                if (data.status.errorCode === "500.001.1001") {
+                    console.log("Payment is still being processed...");
+                } else if (resultCode !== undefined) {
+                    // Handle any specific result code, passing the full status data
+                    handlePaymentResponse(resultCode.toString(), resultDesc, data.status);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+
+            if (reqcount >= maxAttempts) {
+                handleTimeout();
+            }
+        }, 10000);
+    };
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Retry button event listener
+        retryButton.addEventListener("click", () => {
+            userCancelled = false;
+            reqcount = 0;
+            retryButton.style.display = "none";
+            homeButton.style.display = "none";
+            loadingSpinner.style.display = "inline-block";
+            loadingSpinner.classList.add("fa-spin"); // Re-enable spinner animation
+            processingMessage.style.display = "block";
+            cancelButton.style.display = "inline-block";
+            progressBar.style.width = "0%";
+            progressBar.classList.remove("bg-success", "bg-warning", "bg-danger");
+            progressBar.classList.add("bg-primary");
+            initialMessage.style.display = "block";
+            initialMessage.textContent = "Your payment is being processed";
+            confirmText.style.display = "block";
+            confirmText.textContent = "Waiting for confirmation...";
+            statusMessage.innerHTML = "";
+            attemptCounter.textContent = "Checking payment status (0/20)...";
+            stkPushQueryWithIntervals(checkoutRequestID);
+        });
+
+        // Cancel button event listener
+        cancelButton.addEventListener("click", handleCancellation);
+
+        // Start the status check on page load
+        stkPushQueryWithIntervals(checkoutRequestID);
+    });
+</script>
+{% endblock content %}

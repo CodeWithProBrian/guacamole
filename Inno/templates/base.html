@@ -57,7 +57,7 @@
                                 <p>Making the world a better place through constructing elegant hierarchies.</p>
                                 <p class="copyright-text"><span>© <script>
                                     document.write(new Date().getFullYear());
-                                </script> Blink.</span>Designed and Developed by <a href="#" rel="nofollow" target="_blank">InnoTech</a>
+                                </script> Innovestra Enterprises.</span>Designed and Developed by <a href="#" rel="nofollow" target="_blank">Innovestra</a>
                                 </p>
                             </div>
                             <!-- End Single Widget -->
@@ -98,6 +98,58 @@
     <script src="{% static "js/count-up.min.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/brands.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if messages %}
+            {% for message in messages %}
+                const messageType = '{{ message.tags }}';
+                let swalIcon;
+                
+                // Map Django message tags to SweetAlert2 icons
+                switch(messageType) {
+                    case 'success':
+                        swalIcon = 'success';
+                        break;
+                    case 'error':
+                        swalIcon = 'error';
+                        break;
+                    case 'warning':
+                        swalIcon = 'warning';
+                        break;
+                    case 'info':
+                        swalIcon = 'info';
+                        break;
+                    default:
+                        swalIcon = 'info';
+                }
+
+                Swal.fire({
+                    icon: swalIcon,
+                    title: '{{ message.tags|title }}',
+                    text: '{{ message|safe }}',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInRight animate__faster'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutRight animate__faster'
+                    },
+                    customClass: {
+                        popup: 'modern-toast',
+                        title: 'modern-toast-title',
+                        content: 'modern-toast-content'
+                    },
+                    backdrop: false
+                });
+            {% endfor %}
+        {% endif %}
+    });
+</script>
     <script>
         //========= testimonial 
         tns({

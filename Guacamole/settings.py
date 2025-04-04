@@ -25,6 +25,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,7 +76,10 @@ DATABASES = {
     }
 }
 
-
+AUTHENTICATION_BACKENDS = [
+    'Inno.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -144,8 +148,11 @@ SITE_NAME = os.getenv('SITE_NAME')
 SITE_URL = os.getenv('SITE_URL')
 
 
-MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
-MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
-MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL')
-MPESA_SHORTCODE =   os.getenv('MPESA_SHORTCODE')
-MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
+consumer_key = os.getenv('consumer_key')
+consumer_secret = os.getenv('consumer_secret')
+business_shortcode = os.getenv('business_shortcode')
+passkey= os.getenv('passkey')
+callback_url = os.getenv('callback_url')
+access_token_url = os.getenv('access_token_url')
+stk_push_url = os.getenv('stk_push_url')
+query_url = os.getenv('query_url')

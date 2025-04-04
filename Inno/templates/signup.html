@@ -1,0 +1,432 @@
+{% extends "base.html" %}{% load static %}{% block title %}User Registration{% endblock title %}
+{% block content %}
+<!-- Start Breadcrumbs -->
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6 col-12">
+                <div class="breadcrumbs-content">
+                    <h1 class="page-title">Sign Up</h1>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-12">
+                <ul class="breadcrumb-nav">
+                    <li><a href="index.html">Home</a></li>
+                    <li>Sign Up</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Breadcrumbs -->
+<!-- Start Account Signup Area -->
+<div class="account-login section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 offset-lg-3 col-md-10 offset-md-1 col-12">
+                <!-- Verification Message Container -->
+                <div id="verification-message" class="alert alert-success {% if not verification_sent %}d-none{% endif %} mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="lni lni-envelope me-2"></i>
+                            <span id="verification-text">
+                                {% if verification_message %}{{ verification_message }}{% endif %}
+                            </span>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div class="mt-2">
+                        <button id="resend-verification" class="btn btn-link p-0 text-primary small">
+                            Resend verification email
+                        </button>
+                        <p class="small text-muted mt-1">Check your spam folder if you don't see it.</p>
+                    </div>
+                </div>
+
+                <form class="card login-form inner-content modern-form needs-validation" novalidate method="post" id="signupForm" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="title">
+                            <h3>Create Your Account</h3>
+                            <p>Join our community and start exploring</p>
+                        </div>
+                        <div class="or-divider"></div>
+                        
+                        <div class="input-head">
+                            <div class="row">
+                                <div class="col-lg-6 col-12">
+                                    <div class="form-group input-group">
+                                        <label><i class="lni lni-user"></i></label>
+                                        <input class="form-control" type="text" name="first_name" placeholder="First name" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-12">
+                                    <div class="form-group input-group">
+                                        <label><i class="lni lni-user"></i></label>
+                                        <input class="form-control" type="text" name="last_name" placeholder="Last name" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-6 col-12">
+                                    <div class="form-group input-group">
+                                        <label><i class="lni lni-phone"></i></label>
+                                        <input class="form-control" type="number" name="phone" placeholder="Phone number" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-12">
+                                    <div class="form-group input-group">
+                                        <label><i class="lni lni-envelope"></i></label>
+                                        <input class="form-control" type="email" name="email" placeholder="Email address" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group input-group password-field-wrapper">
+                                <label><i class="lni lni-lock-alt"></i></label>
+                                <input class="form-control" type="password" name="password" id="password" placeholder="Password" required>
+                                <span class="password-toggle" onclick="togglePassword('password')">
+                                    <i class="lni lni-eye"></i>
+                                </span>
+                            </div>
+                            
+                            <div class="form-group input-group password-field-wrapper">
+                                <label><i class="lni lni-lock-alt"></i></label>
+                                <input class="form-control" type="password" name="password_confirm" id="password_confirm" placeholder="Confirm password" required>
+                                <span class="password-toggle" onclick="togglePassword('password_confirm')">
+                                    <i class="lni lni-eye"></i>
+                                </span>
+                            </div>
+                            <div class="form-group text-center">
+                                <div class="file-upload-container">
+                                    <label for="profile-upload" class="file-upload-label">
+                                            <i class="lni lni-user"></i>
+                                    </label>
+                                    <input class="form-control" type="file" name="profile" id="profile-upload" required>
+                                </div>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="button">
+                            <button class="btn modern-btn primary-btn w-100 mb-3" type="submit" id="submitButton">Create Account</button>
+                            <a class="btn modern-btn secondary-btn w-100" href="{% url 'login' %}">Sign In</a>
+                        </div>
+                        
+                        <div class="terms-text">
+                            <p>By signing up, you agree to our Terms and Data Policy.</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Account Signup Area -->
+
+<script>
+// Password toggle functionality
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordField.setAttribute('type', type);
+    
+    const icon = event.currentTarget.querySelector('i');
+    if (type === 'text') {
+        icon.classList.remove('lni-eye');
+        icon.classList.add('lni-eye-slash');
+    } else {
+        icon.classList.remove('lni-eye-slash');
+        icon.classList.add('lni-eye');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Create modal structure
+    const modalHTML = `
+    <div id="errorModal" class="error-modal">
+        <div class="error-modal-content">
+            <div class="error-modal-header">
+                <span class="error-modal-close">&times;</span>
+                <h4><i class="lni lni-warning"></i> Please Fix the Following</h4>
+            </div>
+            <div class="error-modal-body">
+                <ul id="errorList"></ul>
+            </div>
+            <div class="error-modal-footer">
+                <button class="btn modern-btn primary-btn" id="errorModalClose">Got It</button>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    // Append modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add styles for the modal
+    const modalStyle = document.createElement('style');
+    modalStyle.textContent = `
+        .error-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .error-modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateY(-50px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .error-modal-header {
+            padding: 20px;
+            background-color:rgb(251, 251, 251);
+            color:rgb(2, 9, 16);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-modal-header h4 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .error-modal-header i {
+            margin-right: 10px;
+        }
+        
+        .error-modal-body {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error-modal-body ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+        
+        .error-modal-body li {
+            margin-bottom: 8px;
+            color:rgb(28, 114, 67);
+        }
+        
+        .error-modal-footer {
+            padding: 15px 20px;
+            text-align: right;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .error-modal-close {
+            color:rgb(121, 176, 184);
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            margin-left: auto;
+            cursor: pointer;
+        }
+        
+        .error-modal.show {
+            display: block;
+            opacity: 1;
+        }
+        
+        .error-modal.show .error-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.6s ease;
+        }
+    `;
+    document.head.appendChild(modalStyle);
+    
+    // Get modal elements
+    const errorModal = document.getElementById('errorModal');
+    const errorList = document.getElementById('errorList');
+    const closeButton = document.querySelector('.error-modal-close');
+    const closeButtonFooter = document.getElementById('errorModalClose');
+    
+    // Close modal function
+    function closeModal() {
+        errorModal.classList.remove('show');
+        setTimeout(() => {
+            errorModal.style.display = 'none';
+        }, 300);
+    }
+    
+    // Close modal on click
+    closeButton.addEventListener('click', closeModal);
+    closeButtonFooter.addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === errorModal) {
+            closeModal();
+        }
+    });
+    
+    // Get form and other elements
+    const form = document.getElementById('signupForm');
+    const submitButton = document.getElementById('submitButton');
+    const verificationMessage = document.getElementById('verification-message');
+    const verificationText = document.getElementById('verification-text');
+    
+    // Setup resend verification button regardless of visibility state
+    const resendButton = document.getElementById('resend-verification');
+    if (resendButton) {
+        resendButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const email = form.querySelector('input[name="email"]').value;
+            const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            resendButton.disabled = true;
+            resendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+            
+            fetch("{% url 'resend_verification' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                verificationText.textContent = data.message;
+                verificationMessage.classList.remove('d-none');
+                verificationMessage.classList.remove('alert-danger');
+                verificationMessage.classList.add('alert-success');
+            })
+            .catch(error => {
+                verificationText.textContent = 'Failed to resend verification email';
+                verificationMessage.classList.remove('d-none');
+                verificationMessage.classList.remove('alert-success');
+                verificationMessage.classList.add('alert-danger');
+            })
+            .finally(() => {
+                resendButton.disabled = false;
+                resendButton.innerHTML = 'Resend verification email';
+            });
+        });
+    }
+    
+    // Check for Django messages
+    const djangoMessages = document.querySelectorAll('.messages .message');
+    if (djangoMessages.length > 0) {
+        errorList.innerHTML = '';
+        djangoMessages.forEach(message => {
+            const li = document.createElement('li');
+            li.textContent = message.textContent;
+            errorList.appendChild(li);
+            
+            // Check for verification message
+            if (message.textContent.includes('verification') || message.textContent.includes('check your email')) {
+                verificationMessage.classList.remove('d-none');
+                verificationText.textContent = message.textContent;
+                message.remove();
+            }
+        });
+        
+        // Show modal if there are errors
+        if (errorList.children.length > 0) {
+            errorModal.style.display = 'block';
+            setTimeout(() => {
+                errorModal.classList.add('show');
+            }, 10);
+        }
+    }
+    
+    // Form submission handler
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        errorList.innerHTML = '';
+        
+        // Get form values
+        const formData = new FormData(form);
+        const formValues = Object.fromEntries(formData.entries());
+        
+        let errors = [];
+        
+        // Validation checks
+        if (!formValues.first_name || !formValues.last_name) {
+            errors.push('First name and last name are required');
+        }
+        if (!formValues.phone || formValues.phone.length < 10) {
+            errors.push('Valid phone number is required (at least 10 digits)');
+        }
+        if (!formValues.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
+            errors.push('Valid email address is required');
+        }
+        if (!formValues.password || formValues.password.length < 8) {
+            errors.push('Password must be at least 8 characters long');
+        }
+        if (formValues.password !== formValues.password_confirm) {
+            errors.push('Passwords do not match');
+        }
+        if (!document.getElementById('terms').checked) {
+            errors.push('You must agree to the terms and conditions');
+        }
+        
+        // If there are errors, show modal
+        if (errors.length > 0) {
+            errors.forEach(error => {
+                const li = document.createElement('li');
+                li.textContent = error;
+                errorList.appendChild(li);
+            });
+            
+            errorModal.style.display = 'block';
+            setTimeout(() => {
+                errorModal.classList.add('show');
+                document.querySelector('.error-modal-content').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.error-modal-content').classList.remove('shake');
+                }, 600);
+            }, 10);
+            return;
+        }
+        
+        // Disable button and show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating account...';
+        
+        // Submit the form
+        form.submit();
+    });
+});
+</script>
+{% endblock content %}

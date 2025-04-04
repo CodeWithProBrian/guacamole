@@ -1,0 +1,75 @@
+{% extends "free_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="section-title">
+                    <h3 class="wow zoomIn" data-wow-delay=".2s">{{ title }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Package Name</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.price.id_for_label }}" class="form-label">Price</label>
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                    <div class="text-danger">{{ form.price.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.ussd.id_for_label }}" class="form-label">USSD Code</label>
+                                {{ form.ussd }}
+                                {% if form.ussd.errors %}
+                                    <div class="text-danger">{{ form.ussd.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.validity.id_for_label }}" class="form-label">Validity (hours)</label>
+                                {{ form.validity }}
+                                {% if form.validity.errors %}
+                                    <div class="text-danger">{{ form.validity.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.retry.id_for_label }}" class="form-label">Retry</label>
+                                {{ form.retry }}
+                                {% if form.retry.errors %}
+                                    <div class="text-danger">{{ form.retry.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'store' %}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary" style="background-color: #0046AD; border: none;">Save Package</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
