@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Nairobi'
 
 USE_I18N = True
 
@@ -148,11 +148,19 @@ SITE_NAME = os.getenv('SITE_NAME')
 SITE_URL = os.getenv('SITE_URL')
 
 
-consumer_key = os.getenv('consumer_key')
-consumer_secret = os.getenv('consumer_secret')
-business_shortcode = os.getenv('business_shortcode')
-passkey= os.getenv('passkey')
-callback_url = os.getenv('callback_url')
-access_token_url = os.getenv('access_token_url')
-stk_push_url = os.getenv('stk_push_url')
-query_url = os.getenv('query_url')
+# Mpesa settings
+CONSUMER_KEY = os.getenv('CONSUMER_KEY')
+CONSUMER_SECRET = os.getenv('CONSUMER_SECRET')
+MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
+MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
+CALLBACK_URL = os.getenv('CALLBACK_URL')
+MPESA_BASE_URL = os.getenv('MPESA_BASE_URL')
+TILL_NUMBER = os.getenv('TILL_NUMBER')
+
+LOGIN_REDIRECT_URL = "/BingwaStore/"
+LOGOUT_REDIRECT_URL = "/Login/"
+
+# Session timeout settings
+SESSION_COOKIE_AGE = 600  # 10 minutes in seconds
+SESSION_SAVE_EVERY_REQUEST = True  # Update the session expiry time on every request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session expires when browser closes

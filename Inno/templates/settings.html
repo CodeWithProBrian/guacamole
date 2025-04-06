@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Account Settings{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Account Settings Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column align-items-center text-center mb-4">
+                        <div class="position-relative">
+                            {% if user.profile.profile_picture %}
+                                <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-fluid shadow" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/profile/avatar1.png' %}" alt="Default Profile" class="rounded-circle img-fluid shadow" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% endif %}
+                            <button class="btn btn-sm btn-primary rounded-circle position-absolute bottom-0 end-0" title="Change Photo" data-bs-toggle="modal" data-bs-target="#photoModal">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3">
+                            <h5 class="fw-bold">{{ user.first_name }} {{ user.last_name }}</h5>
+                            <p class="text-muted mb-1 small">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <ul class="nav nav-pills flex-column gap-2">
+                        <li class="nav-item">
+                            <a class="nav-link text-start w-100 {% if active_tab == 'profile' %}active{% else %}text-dark{% endif %} rounded-pill d-flex align-items-center" href="?tab=profile">
+                                <i class="fas fa-user me-3"></i> Profile Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-start w-100 {% if active_tab == 'security' %}active{% else %}text-dark{% endif %} rounded-pill d-flex align-items-center" href="?tab=security">
+                                <i class="fas fa-lock me-3"></i> Security
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-start w-100 {% if active_tab == 'preferences' %}active{% else %}text-dark{% endif %} rounded-pill d-flex align-items-center" href="?tab=preferences">
+                                <i class="fas fa-cog me-3"></i> Preferences
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Content -->
+        <div class="col-lg-9">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="tab-content">
+                        <!-- Profile Settings Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'profile' %}show active{% endif %}" id="profile">
+                            <h4 class="mb-4 fw-bold">Profile Information</h4>
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="update_profile" value="1">
+                                
+                                <div class="row mb-4 g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                        <input type="text" name="{{ user_form.first_name.html_name }}" id="{{ user_form.first_name.id_for_label }}" 
+                                            class="form-control form-control-lg rounded-3" value="{{ user_form.first_name.value|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                        <input type="text" name="{{ user_form.last_name.html_name }}" id="{{ user_form.last_name.id_for_label }}" 
+                                            class="form-control form-control-lg rounded-3" value="{{ user_form.last_name.value|default:'' }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4 g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ user_form.email.id_for_label }}" class="form-label">Email</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope"></i></span>
+                                            <input type="email" name="{{ user_form.email.html_name }}" id="{{ user_form.email.id_for_label }}" 
+                                                class="form-control form-control-lg rounded-end border-start-0" value="{{ user_form.email.value|default:'' }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ user_form.phone.id_for_label }}" class="form-label">Phone</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone"></i></span>
+                                            <input type="tel" name="{{ user_form.phone.html_name }}" id="{{ user_form.phone.id_for_label }}" 
+                                                class="form-control form-control-lg rounded-end border-start-0" value="{{ user_form.phone.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Bio</label>
+                                    <textarea name="{{ profile_form.bio.html_name }}" id="{{ profile_form.bio.id_for_label }}" 
+                                        class="form-control rounded-3" rows="4" placeholder="Tell us a little about yourself...">{{ profile_form.bio.value|default:'' }}</textarea>
+                                </div>
+                                
+                                <div class="row mb-4 g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ profile_form.location.id_for_label }}" class="form-label">Location</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-map-marker-alt"></i></span>
+                                            <input type="text" name="{{ profile_form.location.html_name }}" id="{{ profile_form.location.id_for_label }}" 
+                                                class="form-control form-control-lg rounded-end border-start-0" value="{{ profile_form.location.value|default:'' }}" placeholder="City, Country">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ profile_form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-calendar"></i></span>
+                                            <input type="date" name="{{ profile_form.date_of_birth.html_name }}" id="{{ profile_form.date_of_birth.id_for_label }}" 
+                                                class="form-control form-control-lg rounded-end border-start-0" value="{{ profile_form.date_of_birth.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <h5 class="mt-5 mb-4 fw-bold border-bottom pb-2">Social Profiles</h5>
+                                <div class="mb-4">
+                                    <label for="{{ profile_form.website.id_for_label }}" class="form-label">Website</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-globe"></i></span>
+                                        <input type="url" name="{{ profile_form.website.html_name }}" id="{{ profile_form.website.id_for_label }}" 
+                                            class="form-control form-control-lg rounded-end border-start-0" value="{{ profile_form.website.value|default:'' }}" placeholder="https://yourwebsite.com">
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4 g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ profile_form.twitter.id_for_label }}" class="form-label">Twitter</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="fab fa-twitter"></i></span>
+                                            <input type="text" name="{{ profile_form.twitter.html_name }}" id="{{ profile_form.twitter.id_for_label }}" 
+                                                class="form-control form-control-lg rounded-end border-start-0" value="{{ profile_form.twitter.value|default:'' }}" placeholder="@username">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ profile_form.linkedin.id_for_label }}" class="form-label">LinkedIn</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0"><i class="fab fa-linkedin"></i></span>
+                                            <input type="text" name="{{ profile_form.linkedin.html_name }}" id="{{ profile_form.linkedin.id_for_label }}" 
+                                                class="form-control form-control-lg rounded-end border-start-0" value="{{ profile_form.linkedin.value|default:'' }}" placeholder="username">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg px-4 py-2 rounded-pill shadow-sm">
+                                        <i class="fas fa-save me-2"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Security Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'security' %}show active{% endif %}" id="security">
+                            <h4 class="mb-4 fw-bold">Change Password</h4>
+                            <form method="post" class="bg-light p-4 rounded-4 mb-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="change_password" value="1">
+                                
+                                <div class="mb-4">
+                                    <label for="{{ password_form.current_password.id_for_label }}" class="form-label">Current Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-key"></i></span>
+                                        <input type="password" name="{{ password_form.current_password.html_name }}" id="{{ password_form.current_password.id_for_label }}" 
+                                            class="form-control form-control-lg rounded-end border-start-0">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ password_form.new_password.id_for_label }}" class="form-label">New Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-lock"></i></span>
+                                        <input type="password" name="{{ password_form.new_password.html_name }}" id="{{ password_form.new_password.id_for_label }}" 
+                                            class="form-control form-control-lg rounded-end border-start-0">
+                                    </div>
+                                    <div class="form-text">Make sure your password is at least 8 characters and includes numbers and symbols</div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ password_form.confirm_password.id_for_label }}" class="form-label">Confirm New Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-lock"></i></span>
+                                        <input type="password" name="{{ password_form.confirm_password.html_name }}" id="{{ password_form.confirm_password.id_for_label }}" 
+                                            class="form-control form-control-lg rounded-end border-start-0">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary btn-lg px-4 py-2 rounded-pill shadow-sm">
+                                        <i class="fas fa-key me-2"></i> Update Password
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <h4 class="mt-5 mb-4 fw-bold">Login Sessions</h4>
+                            <div class="card border-0 bg-light rounded-4 mb-3">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                                    <i class="fas fa-laptop text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">Current Session</h6>
+                                                    <p class="text-muted small mb-0">Last login: {{ user.last_login|date:"F j, Y, g:i a" }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-success rounded-pill px-3 py-2">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preferences Tab -->
+                        <div class="tab-pane fade {% if active_tab == 'preferences' %}show active{% endif %}" id="preferences">
+                            <h4 class="mb-4 fw-bold">Notification Settings</h4>
+                            <form method="post" class="bg-light p-4 rounded-4 mb-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="update_preferences" value="1">
+                                
+                                <div class="card border-0 rounded-3 mb-3">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">Email Notifications</h6>
+                                                <p class="text-muted small mb-0">Receive updates and alerts via email</p>
+                                            </div>
+                                            <input class="form-check-input" type="checkbox" id="emailNotifications" name="emailNotifications" checked style="width: 3rem; height: 1.5rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card border-0 rounded-3 mb-3">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">SMS Notifications</h6>
+                                                <p class="text-muted small mb-0">Receive updates and alerts via text message</p>
+                                            </div>
+                                            <input class="form-check-input" type="checkbox" id="smsNotifications" name="smsNotifications" style="width: 3rem; height: 1.5rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card border-0 rounded-3 mb-3">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">Marketing Emails</h6>
+                                                <p class="text-muted small mb-0">Receive promotional content and special offers</p>
+                                            </div>
+                                            <input class="form-check-input" type="checkbox" id="marketingEmails" name="marketingEmails" checked style="width: 3rem; height: 1.5rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg px-4 py-2 rounded-pill shadow-sm">
+                                        <i class="fas fa-save me-2"></i> Save Preferences
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <h4 class="mt-5 mb-4 fw-bold text-danger">Account Actions</h4>
+                            <div class="card border-danger border-1 rounded-4">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title fw-bold">Deactivate Your Account</h5>
+                                    <p class="card-text">If you deactivate your account, your profile and data will be hidden until an administrator reactivates it.</p>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button class="btn btn-outline-danger rounded-pill px-4" type="button" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+                                            <i class="fas fa-user-slash me-2"></i> Deactivate Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Account Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="deactivateModalLabel">Deactivate Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" id="deactivateForm">
+                {% csrf_token %}
+                <input type="hidden" name="deactivate_account" value="1">
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle bg-danger bg-opacity-10 mx-auto mb-3">
+                            <i class="fas fa-exclamation-triangle text-danger fa-2x"></i>
+                        </div>
+                        <h5>Are you sure you want to deactivate your account?</h5>
+                    </div>
+                    <p>This action will hide your profile and all your activities.</p>
+                    <p>You will no longer be able to log in with this account until an administrator reactivates it.</p>
+                    <div class="alert alert-warning rounded-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        This action cannot be undone by you. Please be certain.
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ deactivate_form.password.id_for_label }}" class="form-label text-danger">To proceed, please enter your password:</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-lock"></i></span>
+                            <input type="password" name="{{ deactivate_form.password.html_name }}" id="{{ deactivate_form.password.id_for_label }}" 
+                                class="form-control form-control-lg rounded-end border-start-0">
+                        </div>
+                        {% if deactivate_form.password.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ deactivate_form.password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light btn-lg rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4">Deactivate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Upload Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="photoModalLabel">Update Profile Picture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="update_photo" value="1">
+                <div class="modal-body text-center">
+                    <div class="upload-preview mb-4">
+                        {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-fluid shadow" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/profile/avatar1.png' %}" alt="Default Profile" class="rounded-circle img-fluid shadow" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ profile_form.profile_picture.id_for_label }}" class="form-label">Choose a new photo</label>
+                        <input type="file" name="{{ profile_form.profile_picture.html_name }}" id="{{ profile_form.profile_picture.id_for_label }}" 
+                            class="form-control form-control-lg" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.nav-pills .nav-link.active {
+    background-color: var(--bs-primary);
+    box-shadow: 0 4px 10px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.nav-pills .nav-link {
+    padding: 0.75rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-group-text {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+</style>
+
+<script>
+    // Initialize Bootstrap tabs
+    document.addEventListener('DOMContentLoaded', function() {
+        const triggerTabList = [].slice.call(document.querySelectorAll('.nav-link'));
+        triggerTabList.forEach(function(triggerEl) {
+            triggerEl.addEventListener('click', function(event) {
+                event.preventDefault();
+                const tabTarget = this.getAttribute('href');
+                window.location.search = tabTarget.replace('?', '');
+            });
+        });
+        
+        // Activate tab based on URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab) {
+            const activeTab = document.querySelector(`.nav-link[href="?tab=${tab}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+                document.querySelector(`#${tab}`).classList.add('show', 'active');
+            }
+        }
+        
+        // Image preview functionality
+        const fileInput = document.getElementById('{{ profile_form.profile_picture.id_for_label }}');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewContainer = document.querySelector('.upload-preview img');
+                        if (previewContainer) {
+                            previewContainer.src = e.target.result;
+                        }
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    });
+</script>
+{% endblock content %}

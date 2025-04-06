@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 {% load static %}
+<!DOCTYPE html>
 <html class="no-js" lang="en">
 
 <head>
@@ -34,12 +34,11 @@
         </div>
     </div>
     <!-- /End Preloader -->
-
-    <!-- Start Header Area -->
-    {% include "header.html" %}
+     {% include "header.html" %}
     <!-- End Header Area -->
      {% block content %}{% endblock content %}
-    <!-- Start Footer Area -->
+    <!-- ========================= scroll-top ========================= -->
+     <!-- Start Footer Area -->
     <footer class="footer section">
         <!-- Start Footer Top -->
         <div class="footer-top">
@@ -85,7 +84,6 @@
     </footer>
     <!--/ End Footer Area -->
 
-    <!-- ========================= scroll-top ========================= -->
     <a href="#" class="scroll-top">
         <i class="lni lni-chevron-up"></i>
     </a>
@@ -99,57 +97,74 @@
     <script src="{% static "js/main.js" %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/brands.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        {% if messages %}
-            {% for message in messages %}
-                const messageType = '{{ message.tags }}';
-                let swalIcon;
-                
-                // Map Django message tags to SweetAlert2 icons
-                switch(messageType) {
-                    case 'success':
-                        swalIcon = 'success';
-                        break;
-                    case 'error':
-                        swalIcon = 'error';
-                        break;
-                    case 'warning':
-                        swalIcon = 'warning';
-                        break;
-                    case 'info':
-                        swalIcon = 'info';
-                        break;
-                    default:
-                        swalIcon = 'info';
-                }
 
-                Swal.fire({
-                    icon: swalIcon,
-                    title: '{{ message.tags|title }}',
-                    text: '{{ message|safe }}',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 4000,
-                    timerProgressBar: true,
-                    showClass: {
-                        popup: 'animate__animated animate__fadeInRight animate__faster'
-                    },
-                    hideClass: {
-                        popup: 'animate__animated animate__fadeOutRight animate__faster'
-                    },
-                    customClass: {
-                        popup: 'modern-toast',
-                        title: 'modern-toast-title',
-                        content: 'modern-toast-content'
-                    },
-                    backdrop: false
-                });
-            {% endfor %}
-        {% endif %}
-    });
-</script>
+    <!-- Authentication variables - Must come BEFORE session timeout script -->
+    {% if user.is_authenticated %}
+    <script>
+        const isAuthenticated = true;
+        // Add a class to the body element to identify authenticated pages
+        document.body.classList.add('authenticated-user');
+    </script>
+    {% else %}
+    <script>
+        const isAuthenticated = false;
+    </script>
+    {% endif %}
+
+    <!-- Django messages script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    const messageType = '{{ message.tags }}';
+                    let swalIcon;
+                    
+                    // Map Django message tags to SweetAlert2 icons
+                    switch(messageType) {
+                        case 'success':
+                            swalIcon = 'success';
+                            break;
+                        case 'error':
+                            swalIcon = 'error';
+                            break;
+                        case 'warning':
+                            swalIcon = 'warning';
+                            break;
+                        case 'info':
+                            swalIcon = 'info';
+                            break;
+                        default:
+                            swalIcon = 'info';
+                    }
+
+                    Swal.fire({
+                        icon: swalIcon,
+                        title: '{{ message.tags|title }}',
+                        text: '{{ message|safe }}',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true,
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInRight animate__faster'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutRight animate__faster'
+                        },
+                        customClass: {
+                            popup: 'modern-toast',
+                            title: 'modern-toast-title',
+                            content: 'modern-toast-content'
+                        },
+                        backdrop: false
+                    });
+                {% endfor %}
+            {% endif %}
+        });
+    </script>
+
+    <!-- Tiny Slider script -->
     <script>
         //========= testimonial 
         tns({
@@ -190,6 +205,291 @@
             append: " ",
         });
         cu.start();
+    </script>
+
+    <!-- Session Timeout Script -->
+    <script>
+        // Session Timeout Script
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, checking authentication");
+    console.log("Body classes:", document.body.className);
+    console.log("isAuthenticated:", typeof isAuthenticated !== 'undefined' ? isAuthenticated : 'undefined');
+
+    // Only run this code if the user is authenticated
+    if (document.body.classList.contains('authenticated-user') || typeof isAuthenticated !== 'undefined' && isAuthenticated) {
+        console.log("User is authenticated, initializing session timeout");
+        
+        // Configuration
+        const inactivityTimeout = 10 * 60 * 1000;  // 10 minutes of inactivity
+        const countdownDuration = 15; // 15 seconds countdown
+        let inactivityTimer;
+        let countdownTimer;
+        let countdownSeconds = countdownDuration;
+        
+        // Create modal structure for timeout warning
+        const timeoutModalHTML = `
+        <div id="timeoutModal" class="timeout-modal">
+            <div class="timeout-modal-content">
+                <div class="timeout-modal-header">
+                    <h4><i class="lni lni-alarm-clock"></i> Session Timeout Warning</h4>
+                </div>
+                <div class="timeout-modal-body">
+                    <p>Your session is about to expire due to inactivity.</p>
+                    <p>You will be logged out in <span id="countdownTimer" class="countdown-timer">${countdownDuration}</span> seconds.</p>
+                    <p>Would you like to stay logged in?</p>
+                </div>
+                <div class="timeout-modal-footer">
+                    <button class="btn modern-btn secondary-btn" id="logoutNowBtn">Logout Now</button>
+                    <button class="btn modern-btn primary-btn" id="stayLoggedInBtn">Stay Logged In</button>
+                </div>
+            </div>
+        </div>
+        `;
+        
+        // Add styles for the timeout modal
+        const timeoutModalStyle = document.createElement('style');
+        timeoutModalStyle.textContent = `
+            .timeout-modal {
+                display: none;
+                position: fixed;
+                z-index: 9999;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .timeout-modal-content {
+                position: relative;
+                background-color: #fff;
+                margin: 10% auto;
+                padding: 0;
+                width: 90%;
+                max-width: 500px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                transform: translateY(-50px);
+                opacity: 0;
+                transition: all 0.4s ease;
+            }
+            
+            .timeout-modal.show {
+                display: block;
+                opacity: 1;
+            }
+            
+            .timeout-modal.show .timeout-modal-content {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            
+            .timeout-modal-header {
+                padding: 20px;
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #e9ecef;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                display: flex;
+                align-items: center;
+            }
+            
+            .timeout-modal-header h4 {
+                margin: 0;
+                font-size: 18px;
+                color: #333;
+            }
+            
+            .timeout-modal-header i {
+                margin-right: 10px;
+                color: #dc3545;
+            }
+            
+            .timeout-modal-body {
+                padding: 20px;
+                text-align: center;
+            }
+            
+            .countdown-timer {
+                font-weight: bold;
+                font-size: 1.2em;
+                color: #dc3545;
+            }
+            
+            .timeout-modal-footer {
+                padding: 15px 20px;
+                text-align: center;
+                border-top: 1px solid #e9ecef;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+            
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
+            .timeout-modal.warning .countdown-timer {
+                animation: pulse 1s infinite;
+            }
+        `;
+        
+        // Append modal and styles to document if they don't already exist
+        if (!document.getElementById('timeoutModalStyle')) {
+            document.head.appendChild(timeoutModalStyle);
+            timeoutModalStyle.id = 'timeoutModalStyle';
+            console.log("Timeout modal style added");
+        }
+        
+        if (!document.getElementById('timeoutModal')) {
+            document.body.insertAdjacentHTML('beforeend', timeoutModalHTML);
+            console.log("Timeout modal HTML added");
+        }
+        
+        // Get modal elements
+        const timeoutModal = document.getElementById('timeoutModal');
+        const countdownTimerEl = document.getElementById('countdownTimer');
+        const stayLoggedInBtn = document.getElementById('stayLoggedInBtn');
+        const logoutNowBtn = document.getElementById('logoutNowBtn');
+        
+        // Function to reset the inactivity timer
+        function resetInactivityTimer() {
+            console.log("Resetting inactivity timer");
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(showTimeoutWarning, inactivityTimeout);
+        }
+        
+        // Function to show the timeout warning modal
+        function showTimeoutWarning() {
+            console.log("Showing timeout warning");
+            timeoutModal.style.display = 'block';
+            setTimeout(() => {
+                timeoutModal.classList.add('show');
+            }, 10);
+            
+            countdownSeconds = countdownDuration;
+            updateCountdown();
+            
+            // Start countdown timer
+            countdownTimer = setInterval(updateCountdown, 1000);
+        }
+        
+        // Function to update the countdown display
+        function updateCountdown() {
+            countdownTimerEl.textContent = countdownSeconds;
+            
+            // Add warning class when time is running low (10 seconds or less)
+            if (countdownSeconds <= 10) {
+                timeoutModal.classList.add('warning');
+            }
+            
+            if (countdownSeconds <= 0) {
+                clearInterval(countdownTimer);
+                logoutUser();
+            } else {
+                countdownSeconds--;
+            }
+        }
+        
+        // Function to hide the timeout warning modal
+        function hideTimeoutWarning() {
+            console.log("Hiding timeout warning");
+            timeoutModal.classList.remove('show', 'warning');
+            setTimeout(() => {
+                timeoutModal.style.display = 'none';
+            }, 300);
+            clearInterval(countdownTimer);
+        }
+        
+        // Function to logout the user
+        function logoutUser() {
+            console.log("Logging out user");
+            window.location.href = '{% url "logout" %}'; // Adjust this URL to match your logout URL
+        }
+        
+        // Function to get CSRF token
+        function getCSRFToken() {
+            // First try to get it from a form if available
+            const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenElement) {
+                return tokenElement.value;
+            }
+            
+            // Otherwise, get it from cookie
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, 'csrftoken='.length) === 'csrftoken=') {
+                        cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Add event listeners for the timeout modal buttons
+        if (stayLoggedInBtn) {
+            stayLoggedInBtn.addEventListener('click', function() {
+                hideTimeoutWarning();
+                resetInactivityTimer();
+                
+                // Make an AJAX call to refresh the session on the server
+                const csrfToken = getCSRFToken();
+                
+                if (csrfToken) {
+                    console.log("Sending session refresh request");
+                    fetch('/refresh-session/', {  // Adjust this URL to match your URL configuration
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action: 'refresh' })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Session refreshed successfully:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error refreshing session:', error);
+                    });
+                } else {
+                    console.error('CSRF token not found');
+                }
+            });
+        }
+        
+        if (logoutNowBtn) {
+            logoutNowBtn.addEventListener('click', logoutUser);
+        }
+        
+        // Track user activity to reset the timer
+        const resetEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        resetEvents.forEach(event => {
+            document.addEventListener(event, resetInactivityTimer, true);
+        });
+        
+        // Initialize the inactivity timer when the page loads
+        resetInactivityTimer();
+        // setTimeout(showTimeoutWarning, 2000);
+        
+        console.log('Session timeout script initialized. Timeout set to ' + (inactivityTimeout/1000) + ' seconds.');
+    } else {
+        console.log('User not authenticated. Session timeout not initialized.');
+    }
+});
     </script>
 </body>
 </html>

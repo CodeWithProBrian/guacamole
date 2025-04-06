@@ -1,18 +1,26 @@
 import json
 import uuid
+from django.contrib.auth.views import LoginView
+from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_protect
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
 from django.contrib.auth.decorators import user_passes_test
 from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from . import models
-from .forms import PackageForm
+from .forms import PackageForm, ProfileUpdateForm, UserUpdateForm, ProfileUpdateForm, PasswordChangeCustomForm,DeactivateAccountForm
+from django.contrib.auth import update_session_auth_hash
 import os, logging
 import requests
 import base64, re
@@ -63,7 +71,7 @@ def get_access_token():
     except requests.RequestException as e:
         raise Exception(f"Failed to connect to M-Pesa: {str(e)}")
 
-def initiate_stk_push(phone_number, amount):
+def initiate_stk_push(phone_number, amount, package_id):
     try:
         token = get_access_token()
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
@@ -142,17 +150,12 @@ def initiate_payment(request):
             else:  # other_number
                 receiver_number = format_phone_number(request.POST.get('other_receiver_number'))
                 payment_number = format_phone_number(request.POST.get('payment_number'))
-            
-            # Debug print statement (remove in production)
-            print(f"Initiating STK push for {payment_number}, amount: {amount}, ref: {package_id}")
-            
+ 
             response = initiate_stk_push(
                 phone_number=payment_number,
                 amount=amount,
+                package_id=package_id
             )
-            
-            # Debug print statement (remove in production)
-            print(f"STK push response: {response}")
             
             if response and isinstance(response, dict) and response.get("ResponseCode") == "0":
                 checkout_request_id = response.get("CheckoutRequestID")
@@ -160,10 +163,6 @@ def initiate_payment(request):
                     messages.error(request, "Missing checkout request ID in response.")
                     return render(request, "bingwa.html")
                 
-                # Add debug print statement (remove in production)
-                print(f"Rendering pending.html with checkout_request_id: {checkout_request_id}")
-                
-                # Make sure you're passing the context correctly
                 context = {"checkout_request_id": checkout_request_id}
                 return render(request, "pending.html", context)
             else:
@@ -174,7 +173,10 @@ def initiate_payment(request):
                 
                 messages.error(request, error_message)
                 return render(request, "bingwa.html")
-
+                
+        except models.Package.DoesNotExist:
+            messages.error(request, "Selected package does not exist.")
+            return redirect('store')
         except ValueError as e:
             messages.error(request, str(e))
             return redirect('store')
@@ -186,8 +188,6 @@ def initiate_payment(request):
     
     # Add this return statement for non-POST requests
     return render(request, "bingwa.html")  # or redirect to another page
-        
-
 # View to handle the STK status query
 def query_stk_push(checkout_id):
     print("Quering...")
@@ -238,6 +238,7 @@ def stk_status_view(request):
             return JsonResponse({"error": "Invalid JSON body"}, status=400)
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+ # To allow POST requests from external sources like M-Pesa
 @csrf_exempt  # To allow POST requests from external sources like M-Pesa
 def payment_callback(request):
     if request.method != "POST":
@@ -255,13 +256,15 @@ def payment_callback(request):
             amount = next(item["Value"] for item in metadata if item["Name"] == "Amount")
             mpesa_id = next(item["Value"] for item in metadata if item["Name"] == "MpesaReceiptNumber")
             payment_number = next(item["Value"] for item in metadata if item["Name"] == "PhoneNumber")
+            transaction_date = next(item["Value"] for item in metadata if item["Name"] == "TransactionDate")
 
             # Save transaction to the database
             transaction = models.Transaction.objects.create(
                 amount=amount, 
                 checkout_id=checkout_id, 
                 mpesa_id=mpesa_id, 
-                phone_number=payment_number, 
+                phone_number=payment_number,
+                transaction_date=transaction_date,  # Format the transaction date to a datetime object
                 status="Success"
             )
             transaction.save()
@@ -273,13 +276,11 @@ def payment_callback(request):
     except (json.JSONDecodeError, KeyError) as e:
         return HttpResponseBadRequest(f"Invalid request data: {str(e)}")
 
+
 def home(request):
-    services = models.Service.objects.filter(is_active=True)
-    service_section = models.ServiceSection.objects.filter(is_active=True).first()
+    
     testimonials = models.Testimonial.objects.filter(is_active=True).order_by('-created_at')
     context = {
-        'services': services,
-        'service_section': service_section,
         'testimonials': testimonials,
     }
     return render(request, 'home.html', context)
@@ -537,6 +538,26 @@ def UserLogout(request):
     logout(request)
     messages.success(request,'Logged out successfully')
     return redirect('login')
+
+@login_required
+@require_POST
+@ensure_csrf_cookie
+def refresh_session(request):
+    """
+    Simple view to refresh the user's session when they choose to stay logged in
+    """
+    # Accessing the session modifies it, marking it as having been modified
+    request.session.modified = True
+    
+    # You can also reset the session expiry time explicitly
+    if not request.session.get('session_refreshed'):
+        request.session['session_refreshed'] = True
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Session refreshed successfully',
+        'timestamp': str(datetime.datetime.now())
+    })
 def UserForgotPassword(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -691,3 +712,205 @@ def delete_package(request, pk):
         return redirect('store')
     
     return render(request, 'package_delete.html', {'package': package})
+
+@login_required
+def profile_view(request):
+    """View function to display user profile information"""
+    try:
+        # Get or create user profile
+        profile, created = models.UserProfile.objects.get_or_create(user=request.user)
+        
+        return render(request, 'profile.html', {
+            'profile': profile,
+        })
+    except Exception as e:
+        messages.error(request, f"Error accessing profile: {str(e)}")
+        return redirect('home')
+
+@login_required
+def profile_update(request):
+    """View function to update user profile"""
+    try:
+        profile = request.user.profile
+        
+        if request.method == 'POST':
+            form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
+            if form.is_valid():
+                # Save the profile first (this includes phone number)
+                profile = form.save(commit=False)
+                profile.phone = form.cleaned_data['phone']  # Explicitly set phone
+                profile.save()
+                
+                # Update user model fields
+                user = request.user
+                user.first_name = form.cleaned_data['first_name']
+                user.last_name = form.cleaned_data['last_name']
+                user.email = form.cleaned_data['email']
+                user.save()
+                
+                messages.success(request, "Your profile has been updated successfully!")
+                return redirect('profile')
+        else:
+            form = ProfileUpdateForm(instance=profile, initial={
+                'first_name': request.user.first_name,
+                'last_name': request.user.last_name,
+                'email': request.user.email,
+                'phone': profile.phone,  # Make sure this is included
+            })
+        
+        return render(request, 'profile_update.html', {
+            'form': form,
+            'profile': profile
+        })
+        
+    except Exception as e:
+        messages.error(request, f"Error updating profile: {str(e)}")
+        return redirect('profile')
+@login_required
+def account_settings(request):
+    # Initialize forms with current instances
+    user = request.user
+    profile = user.profile
+    user_form = UserUpdateForm(instance=user)
+    profile_form = ProfileUpdateForm(instance=profile)
+    password_form = PasswordChangeCustomForm()
+    deactivate_form = DeactivateAccountForm()
+
+    if request.method == 'POST':
+        if 'update_profile' in request.POST:
+            user_form = UserUpdateForm(request.POST, instance=user)
+            profile_form = ProfileUpdateForm(
+                request.POST, 
+                request.FILES, 
+                instance=profile
+            )
+            
+            if user_form.is_valid() and profile_form.is_valid():
+                # Save user data first
+                user = user_form.save()
+                
+                # Save profile data with proper date handling
+                profile = profile_form.save(commit=False)
+                profile.user = user  # Ensure relationship is maintained
+                
+                # Handle date of birth specifically
+                if 'date_of_birth' in profile_form.cleaned_data:
+                    profile.date_of_birth = profile_form.cleaned_data['date_of_birth']
+                
+                profile.save()
+                
+                messages.success(request, 'Your profile has been updated!')
+                return redirect(reverse('account_settings') + '?tab=profile')
+
+        elif 'change_password' in request.POST:
+            password_form = PasswordChangeCustomForm(request.POST)
+            
+            if password_form.is_valid():
+                current_password = password_form.cleaned_data.get('current_password')
+                
+                if user.check_password(current_password):
+                    new_password = password_form.cleaned_data.get('new_password')
+                    user.set_password(new_password)
+                    user.save()
+                    update_session_auth_hash(request, user)
+                    messages.success(request, 'Your password has been updated!')
+                    return redirect(reverse('account_settings') + '?tab=security')
+                else:
+                    messages.error(request, 'Current password is incorrect')
+
+        elif 'deactivate_account' in request.POST:
+            deactivate_form = DeactivateAccountForm(request.POST)
+            if deactivate_form.is_valid():
+                password = deactivate_form.cleaned_data.get('password')
+                
+                if user.check_password(password):
+                    user.is_active = False
+                    user.save()
+                    logout(request)
+                    messages.success(request, 'Your account has been deactivated.')
+                    return redirect('home')
+                else:
+                    messages.error(request, 'Password is incorrect')
+                    return redirect(reverse('account_settings') + '?tab=security')
+
+    # Prepare context - use the forms we've already initialized
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form,
+        'password_form': password_form,
+        'deactivate_form': deactivate_form,
+        'active_tab': request.GET.get('tab', 'profile')
+    }
+    
+    return render(request, 'settings.html', context)
+
+@login_required
+def reactivate_account(request, user_id):
+    # Only staff/admin should access this
+    if not request.user.is_staff:
+        messages.error(request, "You don't have permission to perform this action.")
+        return redirect('home')
+    
+    try:
+        user = models.CustomUser.objects.get(id=user_id)
+        user.is_active = True
+        user.save()
+        messages.success(request, f"Account for {user.email} has been reactivated.")
+    except models.CustomUser.DoesNotExist:
+        messages.error(request, "User not found.")
+    
+    return redirect('home')
+
+def send_reactivation_email(request, user):
+    """
+    Send a reactivation email to the user with a secure token
+    """
+    # Generate token
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    
+    # Build the reactivation URL
+    domain = request.get_host()
+    reactivation_url = f"{request.scheme}://{domain}{reverse('reactivate_account', kwargs={'uidb64': uid, 'token': token})}"
+    
+    # Prepare email content
+    subject = 'Reactivate Your Account'
+    message = render_to_string('reactivation_email.html', {
+        'user': user,
+        'reactivation_url': reactivation_url,
+        'valid_days': 7,  # Token validity period
+    })
+    
+    # Send the email
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=message,
+        fail_silently=False,
+    )
+
+def reactivate_account(request, uidb64, token):
+    """
+    View to handle the reactivation link
+    """
+    try:
+        # Decode the user ID
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = models.CustomUser.objects.get(pk=uid)
+        
+        # Check if the token is valid
+        if default_token_generator.check_token(user, token):
+            # Reactivate the account
+            user.is_active = True
+            user.save()
+            
+            messages.success(request, 'Your account has been successfully reactivated! You can now log in.')
+            return redirect('login')
+        else:
+            messages.error(request, 'The reactivation link is invalid or has expired.')
+            return redirect('home')
+    except (TypeError, ValueError, OverflowError, models.customUser.DoesNotExist):
+        messages.error(request, 'The reactivation link is invalid.')
+        return redirect('home')

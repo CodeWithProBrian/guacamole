@@ -1,82 +1,275 @@
 {% extends "free_base.html" %}
 {% load static %}
-
 {% block title %}Safaricom Packages{% endblock title %}
-
 {% block content %}
-<!-- Start Pricing Table Area -->
 <section id="pricing" class="pricing-table style2 section">
     <div class="container">
         {% if request.user.is_superuser or request.user.is_staff %}
-        <button class="btn btn-outline-success rounded-circle d-flex float-end align-items-center align-center" id="addPackageBtn">
+        <button class="btn btn-success d-flex float-end align-items-center align-center" id="addPackageBtn">
             <i class="fa-solid fa-plus"></i>
         </button>
         {% endif %}
+
         <div class="row">
-            
             <div class="col-12">
-                <div class="section-title d-flex justify-content-center align-items-center">
-                    <h3 class="wow zoomIn" data-wow-delay=".2s">Data Bundles</h3>
+                <div class="section-title d-flex justify-content-center align-items-center mb-5">
+                    <h2 class="wow zoomIn" data-wow-delay=".2s">Safaricom Packages</h2>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            {% for package in packages %}
-            <div class="col-md-4 wow fadeInUp" data-wow-delay=".4s">
-                <div class="card shadow-sm mb-4" style="border-radius: 15px; border: 1px solid #e0e0e0;">
-                    <div class="card-body p-3">
-                        <!-- Edit and Delete buttons positioned at top-right -->
-                        {% if request.user.is_superuser or request.user.is_staff %}
-                        <div class="d-flex justify-content-end mb-2">
-                            <button class="btn btn-sm btn-outline-warning rounded-circle me-2 editPackageBtn" 
-                                    data-package-id="{{package.id}}"
-                                    data-package-name="{{package.name}}"
-                                    data-package-price="{{package.price}}"
-                                    data-package-ussd="{{package.ussd}}"
-                                    data-package-validity="{{package.validity}}"
-                                    data-package-retry="{{package.retry}}">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger rounded-circle deletePackageBtn" 
-                                    data-package-id="{{package.id}}"
-                                    data-package-name="{{package.name}}">
-                                    <i class="fa-solid fa-trash"></i>
-                            </button>
+        <!-- DATA BUNDLES SECTION -->
+        <div class="category-section mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <div class="category-header d-flex align-items-center mb-4">
+                        <div class="category-icon me-3">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="40" height="40" rx="20" fill="#E5F6FF"/>
+                                <path d="M26 14H14C12.9 14 12 14.9 12 16V24C12 25.1 12.9 26 14 26H26C27.1 26 28 25.1 28 24V16C28 14.9 27.1 14 26 14ZM20 24C18.62 24 17.5 22.88 17.5 21.5V18.5C17.5 17.12 18.62 16 20 16C21.38 16 22.5 17.12 22.5 18.5V21.5C22.5 22.88 21.38 24 20 24ZM25 17.5H23V16H25V17.5ZM25 20H23V18.5H25V20ZM25 22.5H23V21H25V22.5Z" fill="#0046AD"/>
+                            </svg>
                         </div>
-                        {% endif %}
-            
-                        <!-- Package Icon and Details -->
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="package-icon me-2">
-                                <!-- SVG icon replacing the image from the first template -->
-                                <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z" fill="#0046AD"/>
-                                    <path d="M16.75 14C16.75 12.208 18.208 10.75 20 10.75C21.792 10.75 23.25 12.208 23.25 14C23.25 15.792 21.792 17.25 20 17.25C18.208 17.25 16.75 15.792 16.75 14Z" fill="#00A651"/>
-                                    <path d="M14 20C14 18.208 15.458 16.75 17.25 16.75C19.042 16.75 20.5 18.208 20.5 20C20.5 21.792 19.042 23.25 17.25 23.25C15.458 23.25 14 21.792 14 20Z" fill="#00A651"/>
-                                    <path d="M17.25 22.75C17.25 20.958 18.708 19.5 20.5 19.5C22.292 19.5 23.75 20.958 23.75 22.75C23.75 24.542 22.292 26 20.5 26C18.708 26 17.25 24.542 17.25 22.75Z" fill="#00A651"/>
-                                </svg>
-                            </div>
-                            <div class="package-details">
-                                <span class="text-success fw-bold">{{package.name}}</span>
-                            </div>
-                        </div>
-            
-                        <div class="mb-3">
-                            <small class="text-muted">Kes</small>
-                            <span class="fw-bold" style="font-size: 24px;">{{package.price}}</span>
-                        </div>
-            
-                        <button class="btn btn-primary w-100 py-2 openModalBtn"
-                                style="border-radius: 10px; background-color: #0046AD; border: none; font-weight: 500;"
-                                data-package-name="{{package.name}}"
-                                data-package-price="{{package.price}}">
-                            Purchase
-                        </button>
+                        <h3 class="mb-0 text-primary">Data Bundles</h3>
                     </div>
                 </div>
             </div>
-            {% endfor %}
+
+            <div class="row">
+                {% for package in packages %}
+                {% if package.category == 'DATA' %}
+                <div class="col-md-4 wow fadeInUp" data-wow-delay=".4s">
+                    <div class="card shadow-sm mb-4 hover-elevation" style="border-radius: 15px; border: 1px solid #198754;">
+                        <div class="card-body p-3">
+                            <div class="text-center mb-3">
+                                <img src="{% static 'images/logo/safaricom.png' %}" alt="Safaricom" class="img-fluid" style="max-height: 30px;">
+                            </div>
+                            <!-- Edit and Delete buttons positioned at top-right -->
+                            {% if request.user.is_superuser or request.user.is_staff %}
+                            <div class="d-flex justify-content-end mb-2">
+                                <button class="btn btn-sm btn-warning rounded-circle me-2 editPackageBtn"
+                                       data-package-id="{{package.id}}"
+                                       data-package-name="{{package.name}}"
+                                       data-package-price="{{package.price}}"
+                                       data-package-category="{{package.category}}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger rounded-circle deletePackageBtn"
+                                       data-package-id="{{package.id}}"
+                                       data-package-name="{{package.name}}">
+                                        <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+               
+                            <!-- Package Icon and Details -->
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="package-icon me-2">
+                                    <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z" fill="#0046AD"/>
+                                        <path d="M16.75 14C16.75 12.208 18.208 10.75 20 10.75C21.792 10.75 23.25 12.208 23.25 14C23.25 15.792 21.792 17.25 20 17.25C18.208 17.25 16.75 15.792 16.75 14Z" fill="#00A651"/>
+                                        <path d="M14 20C14 18.208 15.458 16.75 17.25 16.75C19.042 16.75 20.5 18.208 20.5 20C20.5 21.792 19.042 23.25 17.25 23.25C15.458 23.25 14 21.792 14 20Z" fill="#00A651"/>
+                                        <path d="M17.25 22.75C17.25 20.958 18.708 19.5 20.5 19.5C22.292 19.5 23.75 20.958 23.75 22.75C23.75 24.542 22.292 26 20.5 26C18.708 26 17.25 24.542 17.25 22.75Z" fill="#00A651"/>
+                                    </svg>
+                                </div>
+                                <div class="package-details">
+                                    <span class="text-success fw-bold">{{package.name}}</span>
+                                </div>
+                            </div>
+               
+                            <div class="mb-3">
+                                <small class="text-muted">Kes</small>
+                                <span class="fw-bold" style="font-size: 24px;">{{package.price}}</span>
+                            </div>
+               
+                            <button class="btn btn-primary w-100 py-2 openModalBtn"
+                                    style="border-radius: 10px; background-color: #0046AD; border: none; font-weight: 500;"
+                                    data-package-name="{{package.name}}"
+                                    data-package-price="{{package.price}}">
+                                Purchase
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                
+                {% if not packages|dictsortreversed:"category"|first %}
+                <div class="col-12 text-center wow fadeInUp" data-wow-delay=".4s">
+                    <div class="alert alert-info p-4 shadow-sm">
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        <span>No data bundles available at the moment. Please check back later.</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SMS BUNDLES SECTION -->
+        <div class="category-section mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <div class="category-header d-flex align-items-center mb-4">
+                        <div class="category-icon me-3">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="40" height="40" rx="20" fill="#FFF4E5"/>
+                                <path d="M28 14H12C10.9 14 10 14.9 10 16V24C10 25.1 10.9 26 12 26H28C29.1 26 30 25.1 30 24V16C30 14.9 29.1 14 28 14ZM28 16V16.5L20 21.5L12 16.5V16H28ZM12 24V18.8L19.6 23.55C19.8 23.7 20.2 23.7 20.4 23.55L28 18.8V24H12Z" fill="#FF9800"/>
+                            </svg>
+                        </div>
+                        <h3 class="mb-0 text-warning">SMS Bundles</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for package in packages %}
+                {% if package.category == 'SMS' %}
+                <div class="col-md-4 wow fadeInUp" data-wow-delay=".4s">
+                    <div class="card shadow-sm mb-4 hover-elevation" style="border-radius: 15px; border: 1px solid #0046AD;">
+                        <div class="card-body p-3">
+                            <div class="text-center mb-3">
+                                <img src="{% static 'images/logo/safaricom.png' %}" alt="Safaricom" class="img-fluid" style="max-height: 30px;">
+                            </div>
+                            <!-- Edit and Delete buttons positioned at top-right -->
+                            {% if request.user.is_superuser or request.user.is_staff %}
+                            <div class="d-flex justify-content-end mb-2">
+                                <button class="btn btn-sm btn-warning rounded-circle me-2 editPackageBtn"
+                                       data-package-id="{{package.id}}"
+                                       data-package-name="{{package.name}}"
+                                       data-package-price="{{package.price}}"
+                                       data-package-category="{{package.category}}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger rounded-circle deletePackageBtn"
+                                       data-package-id="{{package.id}}"
+                                       data-package-name="{{package.name}}">
+                                        <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+               
+                            <!-- Package Icon and Details -->
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="package-icon me-2">
+                                    <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z" fill="#FF9800"/>
+                                        <path d="M26 15H14C13.448 15 13 15.448 13 16V24C13 24.552 13.448 25 14 25H26C26.552 25 27 24.552 27 24V16C27 15.448 26.552 15 26 15ZM25 17V17.25L20 20.75L15 17.25V17H25ZM15 23V19.25L19.6 22.45C19.8 22.6 20.2 22.6 20.4 22.45L25 19.25V23H15Z" fill="#FFFFFF"/>
+                                    </svg>
+                                </div>
+                                <div class="package-details">
+                                    <span class="text-success fw-bold">{{package.name}}</span>
+                                </div>
+                            </div>
+               
+                            <div class="mb-3">
+                                <small class="text-muted">Kes</small>
+                                <span class="fw-bold" style="font-size: 24px;">{{package.price}}</span>
+                            </div>
+               
+                            <button class="btn w-100 py-2 openModalBtn"
+                                    style="border-radius: 10px; background-color:#0046AD; color: white; border: none; font-weight: 500;"
+                                    data-package-name="{{package.name}}"
+                                    data-package-price="{{package.price}}">
+                                Purchase
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                
+                {% if not packages|dictsortreversed:"category"|first %}
+                <div class="col-12 text-center wow fadeInUp" data-wow-delay=".4s">
+                    <div class="alert alert-warning p-4 shadow-sm">
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        <span>No SMS bundles available at the moment. Please check back later.</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MINUTES BUNDLES SECTION -->
+        <div class="category-section mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <div class="category-header d-flex align-items-center mb-4">
+                        <div class="category-icon me-3">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="40" height="40" rx="20" fill="#F0FFF0"/>
+                                <path d="M20 10C14.48 10 10 14.48 10 20C10 25.52 14.48 30 20 30C25.52 30 30 25.52 30 20C30 14.48 25.52 10 20 10ZM26 22H20C19.45 22 19 21.55 19 21V15C19 14.45 19.45 14 20 14C20.55 14 21 14.45 21 15V19H26C26.55 19 27 19.45 27 20C27 20.55 26.55 22 26 22Z" fill="#0046AD"/>
+                            </svg>
+                        </div>
+                        <h3 class="mb-0 text-success">Minutes Bundles</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for package in packages %}
+                {% if package.category == 'MINUTES' %}
+                <div class="col-md-4 wow fadeInUp" data-wow-delay=".4s">
+                    <div class="card shadow-sm mb-4 hover-elevation" style="border-radius: 15px; border: 1px solid #0046AD;">
+                        <div class="card-body p-3">
+                            <div class="text-center mb-3">
+                                <img src="{% static 'images/logo/safaricom.png' %}" alt="Safaricom" class="img-fluid" style="max-height: 30px;">
+                            </div>
+                            <!-- Edit and Delete buttons positioned at top-right -->
+                            {% if request.user.is_superuser or request.user.is_staff %}
+                            <div class="d-flex justify-content-end mb-2">
+                                <button class="btn btn-sm btn-warning rounded-circle me-2 editPackageBtn"
+                                    data-package-id="{{package.id}}"
+                                    data-package-name="{{package.name}}"
+                                    data-package-price="{{package.price}}"
+                                    data-package-category="{{package.category}}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger rounded-circle deletePackageBtn"
+                                       data-package-id="{{package.id}}"
+                                       data-package-name="{{package.name}}">
+                                        <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+               
+                            <!-- Package Icon and Details -->
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="package-icon me-2">
+                                    <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6C12.268 6 6 12.268 6 20C6 27.732 12.268 34 20 34C27.732 34 34 27.732 34 20C34 12.268 27.732 6 20 6Z" fill="#0046AD"/>
+                                        <path d="M19.5 12V20.25L26.5 24.5L27.5 22.8L21.5 19.25V12H19.5Z" fill="#FFFFFF"/>
+                                    </svg>
+                                </div>
+                                <div class="package-details">
+                                    <span class="text-success fw-bold">{{package.name}}</span>
+                                </div>
+                            </div>
+               
+                            <div class="mb-3">
+                                <small class="text-muted">Kes</small>
+                                <span class="fw-bold" style="font-size: 24px;">{{package.price}}</span>
+                            </div>
+               
+                            <button class="btn w-100 py-2 openModalBtn"
+                                    style="border-radius: 10px; background-color: #0046AD; color: white; border: none; font-weight: 500;"
+                                    data-package-name="{{package.name}}"
+                                    data-package-price="{{package.price}}">
+                                Purchase
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                
+                {% if not packages|dictsortreversed:"category"|first %}
+                <div class="col-12 text-center wow fadeInUp" data-wow-delay=".4s">
+                    <div class="alert alert-success p-4 shadow-sm">
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        <span>No Minutes bundles available at the moment. Please check back later.</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </section>
@@ -127,15 +320,15 @@
                 
                 <div id="myNumberFields" class="fade-in">
                     <p class="saf-field-label">Number to receive offer</p>
-                    <input type="text" placeholder="Enter Number" class="saf-input" id="receiverNumber" name="receiver_number" required pattern="^0[0-9]{9}$|^254[0-9]{9}$" title="Please enter a valid Kenyan phone number (starting with 0 or 254 followed by 9 digits)">
+                    <input type="number" placeholder="Enter Number" class="saf-input" id="receiverNumber" name="receiver_number" required pattern="^0[0-9]{9}$|^254[0-9]{9}$" title="Please enter a valid Kenyan phone number (starting with 0 or 254 followed by 9 digits)">
                 </div>
                 
                 <div id="otherNumberFields" class="fade-in" style="display: none;">
                     <p class="saf-field-label">Number to receive offer</p>
-                    <input type="text" placeholder="Enter Number" class="saf-input" id="otherReceiverNumber" name="other_receiver_number" pattern="^0[0-9]{9}$|^254[0-9]{9}$" title="Please enter a valid Kenyan phone number (starting with 0 or 254 followed by 9 digits)">
+                    <input type="number" placeholder="Enter Number" class="saf-input" id="otherReceiverNumber" name="other_receiver_number" pattern="^0[0-9]{9}$|^254[0-9]{9}$" title="Please enter a valid Kenyan phone number (starting with 0 or 254 followed by 9 digits)">
                     
                     <p class="saf-field-label">Number to make payment</p>
-                    <input type="text" placeholder="Enter Number" class="saf-input" id="paymentNumber" name="payment_number" pattern="^0[0-9]{9}$|^254[0-9]{9}$" title="Please enter a valid Kenyan phone number (starting with 0 or 254 followed by 9 digits)">
+                    <input type="number" placeholder="Enter Number" class="saf-input" id="paymentNumber" name="payment_number" pattern="^0[0-9]{9}$|^254[0-9]{9}$" title="Please enter a valid Kenyan phone number (starting with 0 or 254 followed by 9 digits)">
                 </div>
             </div>
             <div class="saf-modal-footer">
@@ -171,22 +364,16 @@
                 
                 <div class="mb-3">
                     <label for="price" class="saf-field-label">Price</label>
-                    <input type="text" class="saf-input" id="price" name="price" required>
+                    <input type="number" class="saf-input" id="price" name="price" required>
                 </div>
-                
+
                 <div class="mb-3">
-                    <label for="ussd" class="saf-field-label">USSD Code</label>
-                    <input type="text" class="saf-input" id="ussd" name="ussd" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="validity" class="saf-field-label">Validity (hours)</label>
-                    <input type="number" class="saf-input" id="validity" name="validity" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="retry" class="saf-field-label">Retry</label>
-                    <input type="number" class="saf-input" id="retry" name="retry" value="0" required>
+                    <label for="category" class="saf-field-label">Category</label>
+                    <select class="saf-input" id="category" name="category" required>
+                        <option value="DATA">Data</option>
+                        <option value="SMS">SMS</option>
+                        <option value="MINUTES">Minutes</option>
+                    </select>
                 </div>
             </div>
 
@@ -222,22 +409,15 @@
                 
                 <div class="mb-3">
                     <label for="edit_price" class="saf-field-label">Price</label>
-                    <input type="text" class="saf-input" id="edit_price" name="price" required>
+                    <input type="number" class="saf-input" id="edit_price" name="price" required>
                 </div>
-                
                 <div class="mb-3">
-                    <label for="edit_ussd" class="saf-field-label">USSD Code</label>
-                    <input type="text" class="saf-input" id="edit_ussd" name="ussd" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="edit_validity" class="saf-field-label">Validity (hours)</label>
-                    <input type="number" class="saf-input" id="edit_validity" name="validity" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="edit_retry" class="saf-field-label">Retry</label>
-                    <input type="number" class="saf-input" id="edit_retry" name="retry" required>
+                    <label for="edit_category" class="saf-field-label">Category</label>
+                    <select class="saf-input" id="edit_category" name="category" required>
+                        <option value="DATA">Data</option>
+                        <option value="SMS">SMS</option>
+                        <option value="MINUTES">Minutes</option>
+                    </select>
                 </div>
             </div>
 
@@ -451,7 +631,7 @@
             addPackageModal.classList.add('show');
             document.body.style.overflow = 'hidden';
         });
-        
+       
         closeAddModalBtn.addEventListener('click', () => {
             closeModal(addPackageModal);
         });
@@ -462,9 +642,7 @@
                 const packageId = btn.getAttribute('data-package-id');
                 const packageName = btn.getAttribute('data-package-name');
                 const packagePrice = btn.getAttribute('data-package-price');
-                const packageUssd = btn.getAttribute('data-package-ussd');
-                const packageValidity = btn.getAttribute('data-package-validity');
-                const packageRetry = btn.getAttribute('data-package-retry');
+                const packageCategory = btn.getAttribute('data-package-category');
                 
                 // Set form action
                 document.getElementById('editPackageForm').action = `/package/${packageId}/edit/`;
@@ -472,9 +650,7 @@
                 // Populate form fields
                 document.getElementById('edit_name').value = packageName;
                 document.getElementById('edit_price').value = packagePrice;
-                document.getElementById('edit_ussd').value = packageUssd;
-                document.getElementById('edit_validity').value = packageValidity;
-                document.getElementById('edit_retry').value = packageRetry;
+                document.getElementById('edit_category').value = packageCategory;
                 
                 // Show modal
                 editPackageModal.style.display = 'block';
@@ -483,7 +659,7 @@
                 document.body.style.overflow = 'hidden';
             });
         });
-        
+       
         closeEditModalBtn.addEventListener('click', () => {
             closeModal(editPackageModal);
         });

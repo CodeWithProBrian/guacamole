@@ -30,8 +30,8 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link hover-effect" href="#services">
-                                        <span>Our Services</span>
+                                    <a class="nav-link hover-effect" href="{% url "store" %}">
+                                        <span>Safaricom</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -47,8 +47,8 @@
                             <div class="user-account-dropdown position-relative ms-3">
                                 <div class="user-profile-trigger d-flex align-items-center" id="userProfileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="profile-picture-container">
-                                        {% if user.profile.avatar %}
-                                        <img src="{{ user.profile.avatar.url }}" alt="Profile" class="rounded-circle profile-picture">
+                                        {% if user.profile.profile_picture %}
+                                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="rounded-circle profile-picture">
                                         {% else %}
                                         <img src="{% static 'images/profile/avatar1.png' %}" alt="Profile" class="rounded-circle profile-picture">
                                         {% endif %}
@@ -57,10 +57,10 @@
                                     <i class="fas fa-chevron-down ms-1 dropdown-arrow"></i>
                                 </div>
                                 <ul class="dropdown-menu dropdown-menu-end animated-dropdown" aria-labelledby="userProfileDropdown">
-                                    <li><a class="dropdown-item" href="#">
+                                    <li><a class="dropdown-item" href="{% url "profile" %}">
                                         <i class="fas fa-user me-2"></i>Profile
                                     </a></li>
-                                    <li><a class="dropdown-item" href="#">
+                                    <li><a class="dropdown-item" href="{% url "account_settings" %}">
                                         <i class="fas fa-cog me-2"></i>Account Settings
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>

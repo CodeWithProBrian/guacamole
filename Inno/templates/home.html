@@ -1,5 +1,17 @@
 {% extends "base.html" %}{% load static %}{% block title %}Home{% endblock title %}
 {% block content %}
+    <!-- Start Breadcrumbs -->
+    <div class="marquee-container">
+        <div class="marquee-wrapper">
+            <div class="marquee-content">
+                <span>🔥 Offline Purchases: Use Till Number 9445283</span>
+                <span>🚀 Join over 1,000 satisfied customers</span>
+                <span>⚡ Refer Active friends for Data Rewards</span>
+                <span>💼 Enterprise solutions available</span>
+                <span>📞 Support: +254795477371 || +254115045801 </span>
+            </div>
+        </div>
+    </div>
     <!-- Start Hero Area -->
     <section class="hero-area">
         <div class="main__circle"></div>
@@ -16,9 +28,15 @@
                             <span class="color2 wow fadeInUp" data-wow-delay="1.6s">Websites</span>
                         </h1>
                         <p>Improve your daily UX work and create wireframes and diagrams, prototypes, handoff documentation.</p>
+                        {% if user.is_authenticated %}
                         <div class="button">
-                            <a href="{% url "contact" %}" class="btn ">Get Started</a>
+                            <a href="{% url "store" %}" class="btn ">Explore Services</a>
                         </div>
+                        {% else %}
+                        <div class="button">
+                            <a href="{% url "login" %}" class="btn ">Get Started</a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-lg-7 col-12">
@@ -31,45 +49,6 @@
         </div>
     </section>
     <!-- End Hero Area -->
-
-    <!-- Start Services Area -->
-<section id="services" class="services section">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="section-title">
-                    <h3 class="wow zoomIn" data-wow-delay=".2s">{{ service_section.subtitle }}</h3>
-                    <h2 class="wow fadeInUp" data-wow-delay=".4s">{{ service_section.title|safe }}</h2>
-                    <p class="wow fadeInUp" data-wow-delay=".6s">{{ service_section.description }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            {% for service in services %}
-                <div class="col-lg-4 col-md-6 col-12 wow fadeInUp" data-wow-delay=".{% widthratio forloop.counter 1 2 %}s">
-                    <!-- Start Single Service -->
-                    <div class="single-service {{ service.style_class }}">
-                        <div class="service-icon">
-                            <i class="{{ service.icon }}"></i>
-                        </div>
-                        <h3>{{ service.title }}</h3>
-                        <p>{{ service.description }}</p>
-                        <a href="{% if service.learn_more_url %}{{ service.learn_more_url }}{% else %}{% url 'services:service_detail' service.pk %}{% endif %}">Learn More <i class="lni lni-arrow-right"></i></a>
-                    </div>
-                    <!-- End Single Service -->
-                </div>
-            {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info text-center">
-                        No services available at the moment.
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-<!-- /End Services Area -->
-
     <!-- Start Process Area -->
     <section class="process section">
         <div class="container">
@@ -168,12 +147,12 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-md-8 col-12">
                         <div class="text">
-                            <h2>Ready to dive in? <br> Start your free trial today.</h2>
+                            <h2>In dire need to Know About us? <br> Begin your milestone with us today.</h2>
                         </div>
                     </div>
                     <div class="col-lg-6 col-md-4 col-12">
                         <div class="button">
-                            <a href="{% url "register" %}" class="btn">Get started
+                            <a href="{% url "about" %}" class="btn">Get started
                             </a>
                         </div>
                     </div>
@@ -181,5 +160,18 @@
             </div>
         </div>
     </section>
-    <!-- End Call Action Area -->
+<script>
+        // Optional: Pause the marquee on hover
+        document.addEventListener('DOMContentLoaded', function() {
+            const marqueeContent = document.querySelector('.marquee-content');
+            if (marqueeContent) {
+                marqueeContent.addEventListener('mouseenter', function() {
+                    this.style.animationPlayState = 'paused';
+                });
+                marqueeContent.addEventListener('mouseleave', function() {
+                    this.style.animationPlayState = 'running';
+                });
+            }
+        });
+</script>
 {% endblock content %}

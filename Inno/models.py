@@ -7,6 +7,8 @@ import datetime
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from datetime import timedelta
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 # Create your models here.
 class CustomUserManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -20,11 +22,13 @@ class CustomUserManager(BaseUserManager):
     
     def create_user(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
     
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_superuser', True)
         return self._create_user(email, password, **extra_fields)
 
@@ -32,7 +36,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, verbose_name="email address")
     first_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
-    profile = models.ImageField(blank=True, upload_to='profile')
     phone = models.CharField(max_length=50, blank=True)
     is_staff = models.BooleanField(default=False, help_text="Designates whether the user is a staff member")
     is_active = models.BooleanField(default=True, help_text="Designates whether the user is active in the system")
@@ -180,20 +183,24 @@ class PasswordResetToken(models.Model):
         return timezone.now() < self.expires_at
 
 class Package(models.Model):
-    id = models.AutoField(primary_key=True)
+    CATEGORY_CHOICES = [
+        ('DATA', 'Data'),
+        ('SMS', 'SMS'),
+        ('MINUTES', 'Minutes'),
+    ]
+    
+    id = models.AutoField(primary_key=True, null=False, blank=False)
     name = models.CharField(max_length=200)
     price = models.CharField(max_length=20, blank=True, null=True)
-    ussd = models.CharField(max_length=300)
-    validity = models.PositiveIntegerField(help_text="Validity in hours")
-    retry = models.PositiveIntegerField(default=0)
-    
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='DATA')
     
     phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$', 
+        regex=r'^\+?1?\d{9,15}$',
         message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
     )
+    
     class Meta:
-        ordering = ['id']
+        ordering = ['category', 'id']
     
     def __str__(self):
         return f"{self.name} - Ksh. {self.price}"
@@ -218,3 +225,31 @@ class Transaction(models.Model):
     
     def __str__(self):
         return f"{self.reference} - {self.amount} - {self.status}"
+
+class UserProfile(models.Model):
+    """Extended user profile model"""
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    # Add these additional fields for account settings
+    bio = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    # Social media links
+    website = models.URLField(blank=True, null=True)
+    twitter = models.CharField(max_length=100, blank=True, null=True)
+    linkedin = models.CharField(max_length=100, blank=True, null=True)
+    
+    @receiver(post_save, sender=CustomUser)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            UserProfile.objects.create(user=instance)
+
+    @receiver(post_save, sender=CustomUser)
+    def save_user_profile(sender, instance, **kwargs):
+        if not hasattr(instance, 'profile'):
+            UserProfile.objects.create(user=instance)
+        instance.profile.save()
+    
+    def __str__(self):
+        return f"{self.user.first_name}'s Profile"
