@@ -408,18 +408,26 @@
 </style>
 
 <script>
-    // Initialize Bootstrap tabs
     document.addEventListener('DOMContentLoaded', function() {
-        const triggerTabList = [].slice.call(document.querySelectorAll('.nav-link'));
-        triggerTabList.forEach(function(triggerEl) {
-            triggerEl.addEventListener('click', function(event) {
-                event.preventDefault();
-                const tabTarget = this.getAttribute('href');
-                window.location.search = tabTarget.replace('?', '');
+        // Handle navigation links
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(function(navLink) {
+            navLink.addEventListener('click', function(event) {
+                const href = this.getAttribute('href');
+                
+                // Check if this is a tab link or a regular navigation link
+                if (href.startsWith('?tab=')) {
+                    // This is a tab link - handle it as a tab
+                    event.preventDefault();
+                    const tabValue = href.replace('?tab=', '');
+                    window.location.search = `?tab=${tabValue}`;
+                }
+                // If it's a regular link (like /about-us/), let the default navigation happen
+                // No preventDefault() means the browser will follow the href naturally
             });
         });
         
-        // Activate tab based on URL
+        // Activate tab based on URL (only for tab links)
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
         if (tab) {
@@ -427,6 +435,14 @@
             if (activeTab) {
                 activeTab.classList.add('active');
                 document.querySelector(`#${tab}`).classList.add('show', 'active');
+            }
+        } else {
+            // Activate default tab if no tab parameter is in URL
+            const defaultTab = document.querySelector('.nav-link[href^="?tab="]:first-child');
+            if (defaultTab) {
+                defaultTab.classList.add('active');
+                const defaultTabId = defaultTab.getAttribute('href').replace('?tab=', '');
+                document.querySelector(`#${defaultTabId}`).classList.add('show', 'active');
             }
         }
         

@@ -3,44 +3,191 @@
 {% block title %}Message Sent Successfully{% endblock title %}
 
 {% block content %}
-<!-- Start Breadcrumbs -->
-<div class="breadcrumbs">
+<!-- Hero Section -->
+<div class="success-hero bg-gradient-primary text-white py-5">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 col-md-6 col-12">
-                <div class="breadcrumbs-content">
-                    <h1 class="page-title">Message Sent</h1>
-                </div>
+                <h1 class="display-4 fw-bold mb-2">Message Sent</h1>
+                <p class="lead mb-0">Your message has been successfully received.</p>
             </div>
-            <div class="col-lg-6 col-md-6 col-12">
-                <ul class="breadcrumb-nav">
-                    <li><a href="{% url "home" %}">Home</a></li>
-                    <li><a href="{% url "contact" %}">Contact Us</a></li>
-                    <li>Success</li>
-                </ul>
+            <div class="col-lg-6 col-md-6 col-12 text-lg-end text-md-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-lg-end justify-content-md-end mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'contact' %}" class="text-white-50">Contact Us</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Success</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
 </div>
-<!-- End Breadcrumbs -->
 
-<!-- Start Success Area -->
-<div class="section success-message">
+<!-- Success Section -->
+<div class="success-section py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8 col-12 text-center">
-                <div class="success-content">
-                    <i class="fas fa-check-circle text-success" style="font-size: 72px;"></i>
-                    <h2 class="mt-4">Thank You for Your Message!</h2>
-                    <p class="my-4">We've received your inquiry and will get back to you as soon as possible. 
+            <div class="col-lg-8 col-md-10 col-12">
+                <div class="success-card bg-white shadow-sm rounded-4 p-5 text-center">
+                    <!-- Success Animation -->
+                    <div class="success-animation mb-4">
+                        <div class="checkmark-circle">
+                            <div class="checkmark-circle-bg"></div>
+                            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Success Content -->
+                    <h2 class="fw-bold mb-3">Thank You for Your Message!</h2>
+                    <p class="text-muted mb-4">We've received your inquiry and will get back to you as soon as possible. 
                        Our team typically responds within 24-48 business hours.</p>
-                    <div class="button">
-                        <a href="{% url "home" %}" class="btn">Return to Homepage</a>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-primary px-4 py-3">
+                            <span>Return to Homepage</span>
+                        </a>
+                        <a href="{% url 'contact' %}" class="btn btn-outline-primary px-4 py-3">
+                            <span>Send Another Message</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="additional-info mt-4 p-4 bg-light rounded-4 text-center">
+                    <h5 class="fw-bold mb-3">What happens next?</h5>
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-4">
+                            <div class="info-item">
+                                <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: fit-content;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-envelope-check text-primary" viewBox="0 0 16 16">
+                                        <path d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2Zm3.708 6.208L1 11.105V5.383l4.708 2.825ZM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2-7-4.2Z"/>
+                                        <path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm-1.993-1.679a.5.5 0 0 0-.686.172l-1.17 1.95-.547-.547a.5.5 0 0 0-.708.708l.774.773a.75.75 0 0 0 1.174-.144l1.335-2.226a.5.5 0 0 0-.172-.686Z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="fw-bold">Confirmation</h6>
+                                <p class="small text-muted mb-0">You'll receive an email confirmation shortly</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-item">
+                                <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: fit-content;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-check text-primary" viewBox="0 0 16 16">
+                                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514ZM11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                                        <path d="M8.256 14a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="fw-bold">Review</h6>
+                                <p class="small text-muted mb-0">Our team will review your message</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-item">
+                                <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-3" style="width: fit-content;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-reply text-primary" viewBox="0 0 16 16">
+                                        <path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.74 8.74 0 0 0-1.921-.306 7.404 7.404 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254a.503.503 0 0 0-.042-.028.147.147 0 0 1 0-.252.499.499 0 0 0 .042-.028l3.984-2.933zM7.8 10.386c.068 0 .143.003.223.006.434.02 1.034.086 1.7.271 1.326.368 2.896 1.202 3.94 3.08a.5.5 0 0 0 .933-.305c-.464-3.71-1.886-5.662-3.46-6.66-1.245-.79-2.527-.942-3.336-.971v-.66a1.144 1.144 0 0 0-1.767-.96l-3.994 2.94a1.147 1.147 0 0 0 0 1.946l3.994 2.94a1.144 1.144 0 0 0 1.767-.96v-.667z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="fw-bold">Response</h6>
+                                <p class="small text-muted mb-0">We'll contact you within 24-48 hours</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- End Success Area -->
+
+<!-- Add custom styles -->
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--bs-primary) 0%, #4361ee 100%);
+    }
+    
+    .success-hero {
+        padding: 3rem 0;
+    }
+    
+    .btn-primary {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
+    }
+    
+    .btn-outline-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
+    }
+    
+    /* Checkmark animation */
+    .checkmark-circle {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    
+    .checkmark-circle-bg {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+    
+    .checkmark {
+        width: 100px;
+        height: 100px;
+        stroke-width: 2;
+        stroke: var(--bs-primary);
+        stroke-miterlimit: 10;
+        animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+    }
+    
+    .checkmark-circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        stroke: var(--bs-primary);
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    
+    .checkmark-check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+    
+    @keyframes stroke {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+    
+    @keyframes scale {
+        0%, 100% {
+            transform: none;
+        }
+        50% {
+            transform: scale3d(1.1, 1.1, 1);
+        }
+    }
+    
+    @keyframes fill {
+        100% {
+            box-shadow: inset 0px 0px 0px 30px rgba(var(--bs-primary-rgb), 0.1);
+        }
+    }
+</style>
 {% endblock content %}

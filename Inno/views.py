@@ -339,6 +339,7 @@ def contact(request):
             f"Name: {first_name} {last_name}\n"
             f"Email: {email}\n"
             f"Phone: {phone}\n"
+            f"Subject: {subject}\n"
             f"Message: {message}\n\n"
             f"Best regards,\n"
             f"{settings.SITE_NAME}\n"
@@ -640,6 +641,7 @@ def PasswordResetConfirm(request, token):
         messages.error(request, 'Invalid reset link. Request a new one.')
         return redirect('forgot-password')
     
+@login_required
 def BingwaStore(request):
     packages = models.Package.objects.all()
     return render(request, 'bingwa.html', {'packages': packages})
